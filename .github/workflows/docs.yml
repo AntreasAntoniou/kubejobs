@@ -19,7 +19,9 @@ jobs:
 
     - name: Install dependencies
       run: |
-        bash install.sh
+        pip install fire PyYAML
+        pip install docformatter black isort flake8 autoflake sphinx sphinx_rtd_theme sphinx-autodoc-typehints
+        pip install kubernetes
         pip install .
     - name: Build Sphinx documentation # use "sphinx-apidoc -o docs/source gate" when new modules are added prior to pushing
       run: |

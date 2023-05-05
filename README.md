@@ -13,7 +13,9 @@ KubeJobs is a Python library that simplifies the creation and management of Kube
 
 Install KubeJobs using pip:
 
+```
 pip install git+https://github.com/AntreasAntoniou/kubejobs.git
+```
 
 ## Usage
 

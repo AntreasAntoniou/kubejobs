@@ -19,9 +19,8 @@ jobs:
 
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
         bash install install.sh
-        pip3 install .
+        pip install .
     - name: Build Sphinx documentation # use "sphinx-apidoc -o docs/source gate" when new modules are added prior to pushing
       run: |
         cd docs  # Replace 'docs' with the path to your Sphinx documentation directory 

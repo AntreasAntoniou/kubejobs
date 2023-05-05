@@ -2,7 +2,6 @@ LICENSE
 README.md
 setup.py
 kubejobs/__init__.py
-kubejobs/example.py
 kubejobs/jobs.py
 kubejobs.egg-info/PKG-INFO
 kubejobs.egg-info/SOURCES.txt

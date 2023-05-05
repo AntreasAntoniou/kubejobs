@@ -11,9 +11,6 @@ conda install -c conda-forge mamba -y
 
 mamba install -c conda-forge git gh -y
 mamba install -c conda-forge git-lfs -y
-mamba install -c conda-forge micro bat starship fish -y
-pip install fire PyYAML
-pip install docformatter black isort flake8 autoflake sphinx sphinx_rtd_theme sphinx-autodoc-typehints
-pip install kubernetes
+mamba install -c conda-forge micro bat starship fish tree -y
 
-pip install -e .
+pip install -e .[dev]

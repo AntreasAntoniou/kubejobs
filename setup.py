@@ -1,4 +1,8 @@
+from pkg_resources import require
 from setuptools import find_packages, setup
+
+requirements = ["fire", "PyYAML", "kubernetes"]
+dev_requirements = ["docformatter", "black", "isort", "flake8", "autoflake", "sphinx", "sphinx_rtd_theme", "sphinx-autodoc-typehints"]
 
 setup(
     name="kubejobs",
@@ -8,11 +12,8 @@ setup(
     author_email="your.email@example.com",
     url="https://github.com/yourusername/kubejobs",
     packages=find_packages(),
-    install_requires=[
-        "kubernetes>=18.0.0",
-        "fire>=0.4.0",
-        "PyYAML>=5.4.1",
-    ],
+    install_requires=requirements,
+    dev_requires=dev_requirements,
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",

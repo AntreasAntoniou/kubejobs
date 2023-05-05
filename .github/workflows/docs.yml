@@ -23,6 +23,7 @@ jobs:
         pip install .
     - name: Build Sphinx documentation # use "sphinx-apidoc -o docs/source gate" when new modules are added prior to pushing
       run: |
+        conda activate main
         cd docs  # Replace 'docs' with the path to your Sphinx documentation directory 
         make html
 

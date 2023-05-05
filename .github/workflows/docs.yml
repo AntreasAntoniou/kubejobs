@@ -19,7 +19,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        bash install install.sh
+        bash install.sh
         pip install .
     - name: Build Sphinx documentation # use "sphinx-apidoc -o docs/source gate" when new modules are added prior to pushing
       run: |

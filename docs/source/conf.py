@@ -6,10 +6,10 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = 'Kubejobs'
-copyright = '2023, Antreas Antoniou'
-author = 'Antreas Antoniou'
-release = '0.1.0'
+project = "Kubejobs"
+copyright = "2023, Antreas Antoniou"
+author = "Antreas Antoniou"
+release = "0.1.0"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -24,5 +24,5 @@ extensions.append("sphinx.ext.napoleon")
 extensions.append("sphinx.ext.coverage")
 extensions.append("sphinx.ext.todo")
 
-templates_path = ['_templates']
+templates_path = ["_templates"]
 exclude_patterns = []

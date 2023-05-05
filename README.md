@@ -39,7 +39,7 @@ kubernetes_job.run()
 
 For more detailed examples and usage information, please refer to the official documentation.
 
-##Contributing
+## Contributing
 
 Contributions are welcome! If you'd like to contribute, please:
 
@@ -48,6 +48,6 @@ Contributions are welcome! If you'd like to contribute, please:
 3. Commit your changes and push them to your fork
 4. Open a pull request
 
-##License
+## License
 
 KubeJobs is released under the MIT [License](LICENSE).

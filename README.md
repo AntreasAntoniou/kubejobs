@@ -1,6 +1,7 @@
 # KubeJobs
 
-KubeJobs is a Python library that simplifies the creation and management of Kubernetes Jobs. It provides an easy-to-use interface for running experiments, tasks, and other workloads on Kubernetes clusters.
+A Python package for creating and running Kubernetes Jobs, Persistent Volumes (PVs), and Persistent Volume Claims (PVCs). This package simplifies the process of deploying and managing jobs, PVs, and PVCs on Kubernetes, making it easier for users without Kubernetes experience to get started.
+
 
 ## Features
 
@@ -19,25 +20,83 @@ pip install git+https://github.com/AntreasAntoniou/kubejobs.git
 
 ## Usage
 
-Here's a basic example of how to use KubeJobs:
+### KubernetesJob
+
+The `KubernetesJob` class helps you create a Kubernetes Job, generate its YAML configuration, and run the job. Kubernetes Jobs are useful for running short-lived, one-off tasks in your cluster.
 
 ```python
 from kubejobs import KubernetesJob
 
-kubernetes_job = KubernetesJob(
-    name="node-info",
-    image="nvcr.io/nvidia/cuda:12.0.0-cudnn8-devel-ubuntu22.04",
-    command=["/bin/bash"],
-    args=["-c", "ls"],
-    gpu_type="nvidia.com/gpu",
-    gpu_limit=1,
-    backoff_limit=4,
+# Create a Kubernetes Job with a name, container image, and command
+job = KubernetesJob(
+    name="my-job",
+    image="ubuntu:20.04",
+    command=["/bin/bash", "-c", "echo 'Hello, World!'"],
 )
 
-kubernetes_job.run()
+# Generate the YAML configuration for the Job
+print(job.generate_yaml())
+
+# Run the Job on the Kubernetes cluster
+job.run()
 ```
 
-For more detailed examples and usage information, please refer to the official documentation.
+### create_jobs_for_experiments
+
+The create_jobs_for_experiments function allows you to create and run a series of Kubernetes Jobs for a list of commands. This can be helpful for running multiple experiments or tasks with different parameters in parallel.
+
+
+```python
+from kubejobs import create_jobs_for_experiments
+
+# List of commands to run as separate Kubernetes Jobs
+commands = [
+    "python experiment.py --param1 value1",
+    "python experiment.py --param1 value2",
+    "python experiment.py --param1 value3",
+]
+
+# Create and run Kubernetes Jobs for each command in the list
+create_jobs_for_experiments(
+    commands,
+    image="nvcr.io/nvidia/cuda:12.0.0-cudnn8-devel-ubuntu22.04",
+    gpu_type="nvidia.com/gpu",  # Request GPU resources
+    gpu_limit=1,                # Number of GPU resources to allocate
+    backoff_limit=4,            # Maximum number of retries before marking job as failed
+)
+```
+
+### create_pvc
+
+The create_pvc function helps you create a Persistent Volume Claim (PVC) in your Kubernetes cluster. PVCs are used to request storage resources from your cluster, allowing your applications to store and retrieve data.
+
+```python
+from kubejobs import create_pvc
+
+# Create a PVC with a name, storage size, and access mode
+create_pvc("my-pvc", "5Ti", access_modes=["ReadWriteOnce"])
+```
+
+### create_pv
+
+The create_pv function helps you create a Persistent Volume (PV) in your Kubernetes cluster. PVs represent physical storage resources in a cluster, which can be consumed by PVCs. This allows you to manage storage resources independently from applications that use them.
+
+```python
+from kubejobs import create_pv
+
+# Create a PV with a name, storage size, storage class, access mode, and other properties
+create_pv(
+    pv_name="my-pv",
+    storage="1500Gi",
+    storage_class_name="my-storage-class",
+    access_modes=["ReadOnlyMany"],
+    pv_type="local",          # Type of Persistent Volume, either 'local' or 'gcePersistentDisk'
+    claim_name="my-pvc",      # Name of the PVC to bind to the PV
+    local_path="/mnt/data",   # Path on the host for a local PV (required when pv_type is 'local')
+)
+```
+
+For more detailed examples and usage information, please refer to the official [documentation](https://antreas.io/kubejobs/).
 
 ## Contributing
 

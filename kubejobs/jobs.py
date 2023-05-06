@@ -64,8 +64,8 @@ class KubernetesJob:
     def _add_shm_size(self, container: dict):
         """Adds shared memory volume if shm_size is set."""
         if self.shm_size:
-            container["resources"]["limits"]["memory"] = self.shm_size
-            container["resources"]["requests"] = {"memory": self.shm_size}
+            # container["resources"]["limits"]["memory"] = self.shm_size
+            # container["resources"]["requests"] = {"memory": self.shm_size}
             container["volumeMounts"].append(
                 {"name": "dshm", "mountPath": "/dev/shm"}
             )
@@ -123,9 +123,8 @@ class KubernetesJob:
             or self.gpu_limit is None
             or self.gpu_product is None
         ):
-            container["resources"] = (
-                {"limits": {f"{self.gpu_type}": self.gpu_limit}},
-            )
+            container["resources"] = {"limits": {f"{self.gpu_type}": self.gpu_limit}}
+            
 
         container = self._add_shm_size(container)
         container = self._add_env_vars(container)
@@ -157,7 +156,7 @@ class KubernetesJob:
         # Add shared memory volume if shm_size is set
         if self.shm_size:
             job["spec"]["template"]["spec"]["volumes"].append(
-                {"name": "dshm", "emptyDir": {"medium": "Memory"}}
+                {"name": "dshm", "emptyDir": {"medium": "Memory", "sizeLimit": self.shm_size}}
             )
 
         # Add volumes for the volume mounts

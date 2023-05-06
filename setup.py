@@ -13,7 +13,9 @@ setup(
     url="https://github.com/yourusername/kubejobs",
     packages=find_packages(),
     install_requires=requirements,
-    dev_requires=dev_requirements,
+    extras_require={
+        "dev": dev_requirements,
+    },
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",

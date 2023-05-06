@@ -1,0 +1,78 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pyc
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# Data files
+*.csv
+*.tsv
+*.xlsx
+*.h5
+*.pkl
+
+# Logs
+logs/
+
+# Virtual Environment
+venv/
+env/
+*.venv
+*.pyenv
+
+# Machine Learning model files
+*.pt
+*.pth
+*.pkl
+*.onnx
+
+# TensorFlow
+*.tfevents*
+*.ckpt*
+*.pb*
+*.pbtxt
+
+# PyTorch
+*.pt
+*.pth
+
+# Scikit-learn
+*.pkl
+
+# TensorBoard
+events.out.tfevents*
+
+# Sphinx Documentation
+_build/
+doc/_build/
+
+# macOS
+.DS_Store
+
+# VS Code
+.vscode/
+
+# PyCharm
+.idea/
+
+# Spyder
+.spyderproject
+.spyproject
+.spyproject/workspace.ini
+.spyproject/console-history.sqlite
+
+# Other
+*.log
+*.bak
+*.swp
+*.swo
+*.orig
+*.tmp
+*~
+*.egg-info/
+dist/
+build/

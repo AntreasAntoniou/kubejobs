@@ -8,3 +8,8 @@ kubejobs.egg-info/SOURCES.txt
 kubejobs.egg-info/dependency_links.txt
 kubejobs.egg-info/requires.txt
 kubejobs.egg-info/top_level.txt
+kubejobs/examples/__init__.py
+kubejobs/examples/example_interactive_job.py
+kubejobs/examples/example_job.py
+kubejobs/examples/example_pv_pvc.py
+kubejobs/examples/example_storage_write_read.py

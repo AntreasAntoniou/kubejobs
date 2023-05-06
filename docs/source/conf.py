@@ -18,7 +18,7 @@ release = "0.3.0"
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-html_theme = "sphinx_rtd_theme"
+html_theme = "sphinx_material"
 html_static_path = ["_static"]
 extensions = ["sphinx.ext.autodoc", "sphinx_rtd_theme"]
 extensions.append("sphinx.ext.autosummary")

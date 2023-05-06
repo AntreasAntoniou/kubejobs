@@ -11,6 +11,7 @@ dev_requirements = [
     "sphinx",
     "sphinx_rtd_theme",
     "sphinx-autodoc-typehints",
+    "sphinx-material",
 ]
 
 setup(

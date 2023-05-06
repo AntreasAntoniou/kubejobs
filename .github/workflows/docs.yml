@@ -20,7 +20,7 @@ jobs:
     - name: Install dependencies
       run: |
         pip install .[dev]
-        apt install tree
+        sudo apt install tree
     - name: Build Sphinx documentation # use "sphinx-apidoc -o docs/source gate" when new modules are added prior to pushing
       run: |
         tree

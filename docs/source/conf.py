@@ -65,7 +65,7 @@ def _get_github_url(app, pagename, templatename, context, doctree):
         if path.endswith(".txt"):
             path = path[:-4] + source_suffix
 
-        return f"https://github.com/{github_user}/{github_repo}/blob/{commit_hash}/{conf_py_path}{path}"
+        return f"https://github.com/{github_user}/{github_repo}/blob/{commit_hash}/{conf_py_path}{path}.rst"
     else:
         return None
 

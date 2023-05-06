@@ -30,3 +30,46 @@ extensions.append("sphinx.ext.todo")
 
 templates_path = ["_templates"]
 exclude_patterns = []
+
+# Get the current Git commit hash
+commit_hash = os.popen("git rev-parse --short HEAD").read().strip()
+
+source_suffix = {
+    ".rst": "restructuredtext",
+    ".md": "markdown",
+}
+
+
+html_context = {
+    "display_github": True,  # Enable "View page source" link to point to GitHub
+    "github_user": "AntreasAntoniou",
+    "github_repo": "kubejobs",
+    "github_version": "main",  # Replace with the default branch name, if different
+    "conf_py_path": "/docs/source/",  # Path to the conf.py file in your repository
+    "source_suffix": source_suffix,
+    "commit_hash": commit_hash,
+}
+
+
+# Custom function to build the GitHub URL for the source code
+def _get_github_url(app, view, ctx):
+    if ctx["display_github"]:
+        github_user = ctx["github_user"]
+        github_repo = ctx["github_repo"]
+        github_version = ctx["github_version"]
+        conf_py_path = ctx["conf_py_path"]
+        source_suffix = ctx["source_suffix"]
+        commit_hash = ctx["commit_hash"]
+
+        path = view.replace("source/", "")
+        if path.endswith(".txt"):
+            path = path[:-4] + source_suffix
+
+        return f"https://github.com/{github_user}/{github_repo}/blob/{commit_hash}/{conf_py_path}{path}"
+    else:
+        return None
+
+
+# Connect the custom function to the html-page-context event
+def setup(app):
+    app.connect("html-page-context", _get_github_url)

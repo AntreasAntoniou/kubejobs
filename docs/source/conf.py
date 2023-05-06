@@ -52,16 +52,16 @@ html_context = {
 
 
 # Custom function to build the GitHub URL for the source code
-def _get_github_url(app, view, ctx):
-    if ctx["display_github"]:
-        github_user = ctx["github_user"]
-        github_repo = ctx["github_repo"]
-        github_version = ctx["github_version"]
-        conf_py_path = ctx["conf_py_path"]
-        source_suffix = ctx["source_suffix"]
-        commit_hash = ctx["commit_hash"]
+def _get_github_url(app, pagename, templatename, context, doctree):
+    if context["display_github"]:
+        github_user = context["github_user"]
+        github_repo = context["github_repo"]
+        github_version = context["github_version"]
+        conf_py_path = context["conf_py_path"]
+        source_suffix = context["source_suffix"]
+        commit_hash = context["commit_hash"]
 
-        path = view.replace("source/", "")
+        path = pagename.replace("source/", "")
         if path.endswith(".txt"):
             path = path[:-4] + source_suffix
 

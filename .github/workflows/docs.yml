@@ -19,10 +19,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        pip install fire PyYAML
-        pip install docformatter black isort flake8 autoflake sphinx sphinx_rtd_theme sphinx-autodoc-typehints
-        pip install kubernetes
-        pip install .
+        pip install .[dev]
     - name: Build Sphinx documentation # use "sphinx-apidoc -o docs/source gate" when new modules are added prior to pushing
       run: |
         cd docs  # Replace 'docs' with the path to your Sphinx documentation directory 

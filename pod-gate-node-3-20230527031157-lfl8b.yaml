@@ -1,0 +1,183 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    cni.projectcalico.org/containerID: 7e8765a0d4df034f541f144d41071cd778dc39bd760cc401ec656556b28eab62
+    cni.projectcalico.org/podIP: 10.42.27.1/32
+    cni.projectcalico.org/podIPs: 10.42.27.1/32
+    kubernetes.io/psp: global-unrestricted-psp
+  creationTimestamp: "2023-05-27T03:11:57Z"
+  finalizers:
+  - batch.kubernetes.io/job-tracking
+  generateName: gate-node-3-20230527031157-
+  labels:
+    controller-uid: ca754586-ace7-49d9-adc1-9e59a15f56ee
+    job-name: gate-node-3-20230527031157
+  name: gate-node-3-20230527031157-lfl8b
+  namespace: informatics
+  ownerReferences:
+  - apiVersion: batch/v1
+    blockOwnerDeletion: true
+    controller: true
+    kind: Job
+    name: gate-node-3-20230527031157
+    uid: ca754586-ace7-49d9-adc1-9e59a15f56ee
+  resourceVersion: "67108050"
+  uid: 77f4739c-6f9a-4aa3-997f-fc7b33f2280e
+spec:
+  containers:
+  - args:
+    - while true; do sleep 60; done;
+    command:
+    - /bin/bash
+    - -c
+    - --
+    env:
+    - name: NEPTUNE_API_TOKEN
+      value: eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLm5lcHR1bmUuYWkiLCJhcGlfdXJsIjoiaHR0cHM6Ly9hcHAubmVwdHVuZS5haSIsImFwaV9rZXkiOiJkOTFjMTY5Zi03ZGUwLTQ4ODYtYWI0Zi1kZDEzNjlkMGI5ZjQifQ==
+    - name: NEPTUNE_PROJECT
+      value: MachineLearningBrewery/gate-exp-0-8-6
+    - name: NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE
+      value: "TRUE"
+    - name: WANDB_API_KEY
+      value: 821661c6ee1657a2717093701ab76574ae1a9be0
+    - name: WANDB_ENTITY
+      value: machinelearningbrewery
+    - name: WANDB_PROJECT
+      value: gate-exp-0-8-6
+    - name: KAGGLE_USERNAME
+      value: antreasantoniou
+    - name: KAGGLE_KEY
+      value: d14aab63e71334cfa118bd5251bf85da
+    - name: PYTEST_DIR
+      value: /data/
+    - name: EXPERIMENT_NAME
+      value: gate-exp-0-8-6
+    - name: HF_USERNAME
+      value: Antreas
+    - name: HF_TOKEN
+      value: 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
+    - name: HF_CACHE_DIR
+      value: /data/
+    - name: TOKENIZERS_PARALLELISM
+      value: "false"
+    - name: CODE_DIR
+      value: /app/
+    - name: PROJECT_DIR
+      value: /app/
+    - name: EXPERIMENT_NAME_PREFIX
+      value: gate-exp
+    - name: EXPERIMENTS_DIR
+      value: /data/experiments/
+    - name: EXPERIMENT_DIR
+      value: /data/experiments/
+    - name: TALI_DATASET_DIR
+      value: /tali-data/
+    - name: WIT_DATASET_DIR
+      value: /tali-data/wit/
+    - name: DATASET_DIR
+      value: /data/
+    - name: MODEL_DIR
+      value: /data/model/
+    image: ghcr.io/antreasantoniou/gate:latest
+    imagePullPolicy: Always
+    name: gate-node-3-20230527031157
+    resources:
+      limits:
+        nvidia.com/gpu: "1"
+      requests:
+        nvidia.com/gpu: "1"
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /dev/shm
+      name: dshm
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-jmnnm
+      readOnly: true
+  dnsPolicy: ClusterFirst
+  enableServiceLinks: true
+  nodeName: gpu4-vm12
+  nodeSelector:
+    nvidia.com/gpu.product: NVIDIA-A100-SXM4-40GB
+  preemptionPolicy: PreemptLowerPriority
+  priority: 0
+  restartPolicy: Never
+  schedulerName: default-scheduler
+  securityContext: {}
+  serviceAccount: default
+  serviceAccountName: default
+  terminationGracePeriodSeconds: 30
+  tolerations:
+  - effect: NoExecute
+    key: node.kubernetes.io/not-ready
+    operator: Exists
+    tolerationSeconds: 300
+  - effect: NoExecute
+    key: node.kubernetes.io/unreachable
+    operator: Exists
+    tolerationSeconds: 300
+  - effect: NoSchedule
+    key: informatics
+    operator: Equal
+    value: "True"
+  volumes:
+  - emptyDir:
+      medium: Memory
+      sizeLimit: 900G
+    name: dshm
+  - name: kube-api-access-jmnnm
+    projected:
+      defaultMode: 420
+      sources:
+      - serviceAccountToken:
+          expirationSeconds: 3607
+          path: token
+      - configMap:
+          items:
+          - key: ca.crt
+            path: ca.crt
+          name: kube-root-ca.crt
+      - downwardAPI:
+          items:
+          - fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+            path: namespace
+status:
+  conditions:
+  - lastProbeTime: null
+    lastTransitionTime: "2023-05-27T03:11:58Z"
+    status: "True"
+    type: Initialized
+  - lastProbeTime: null
+    lastTransitionTime: "2023-05-27T03:19:24Z"
+    status: "True"
+    type: Ready
+  - lastProbeTime: null
+    lastTransitionTime: "2023-05-27T03:19:24Z"
+    status: "True"
+    type: ContainersReady
+  - lastProbeTime: null
+    lastTransitionTime: "2023-05-27T03:11:57Z"
+    status: "True"
+    type: PodScheduled
+  containerStatuses:
+  - containerID: containerd://d66b928f32fbec753c4cbe92c2e8c80cc0649682c01d09d75c771b410b6ad211
+    image: ghcr.io/antreasantoniou/gate:latest
+    imageID: ghcr.io/antreasantoniou/gate@sha256:e873ea2096026fb3fb6af17076263a5c5b8c4f1092243b399c418b9685b40901
+    lastState: {}
+    name: gate-node-3-20230527031157
+    ready: true
+    restartCount: 0
+    started: true
+    state:
+      running:
+        startedAt: "2023-05-27T03:19:23Z"
+  hostIP: 10.22.11.207
+  phase: Running
+  podIP: 10.42.27.1
+  podIPs:
+  - ip: 10.42.27.1
+  qosClass: BestEffort
+  startTime: "2023-05-27T03:11:58Z"

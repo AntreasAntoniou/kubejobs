@@ -1,6 +1,6 @@
 import os
 import subprocess
-from typing import List
+from typing import List, Optional
 
 import fire
 import yaml
@@ -15,17 +15,20 @@ class KubernetesJob:
     Attributes:
         name (str): Name of the job and associated resources.
         image (str): Container image to use for the job.
-        command (list): Command to execute in the container.
-        args (list): Arguments for the command.
-        gpu_type (str): Type of GPU resource, e.g. "nvidia.com/gpu".
-        gpu_product (str): GPU product, e.g. "NVIDIA-A100-SXM4-80GB".
-        gpu_limit (int): Number of GPU resources to allocate.
-        backoff_limit (int): Maximum number of retries before marking job as failed.
-        restart_policy (str): Restart policy for the job, default is "Never".
-        shm_size (str): Size of shared memory, e.g. "2Gi". If not set, defaults to None.
-        secret_env_vars (dict): Dictionary of secret environment variables.
-        env_vars (dict): Dictionary of normal (non-secret) environment variables.
-        volume_mounts (dict): Dictionary of volume mounts.
+        command (List[str], optional): Command to execute in the container. Defaults to None.
+        args (List[str], optional): Arguments for the command. Defaults to None.
+        cpu_request (str, optional): Amount of CPU to request. For example, "500m" for half a CPU. Defaults to None.
+        ram_request (str, optional): Amount of RAM to request. For example, "1Gi" for 1 gibibyte. Defaults to None.
+        storage_request (str, optional): Amount of storage to request. For example, "10Gi" for 10 gibibytes. Defaults to None.
+        gpu_type (str, optional): Type of GPU resource, e.g. "nvidia.com/gpu". Defaults to None.
+        gpu_product (str, optional): GPU product, e.g. "NVIDIA-A100-SXM4-80GB". Defaults to None.
+        gpu_limit (int, optional): Number of GPU resources to allocate. Defaults to None.
+        backoff_limit (int, optional): Maximum number of retries before marking job as failed. Defaults to 4.
+        restart_policy (str, optional): Restart policy for the job, default is "Never".
+        shm_size (str, optional): Size of shared memory, e.g. "2Gi". If not set, defaults to None.
+        secret_env_vars (dict, optional): Dictionary of secret environment variables. Defaults to None.
+        env_vars (dict, optional): Dictionary of normal (non-secret) environment variables. Defaults to None.
+        volume_mounts (dict, optional): Dictionary of volume mounts. Defaults to None.
 
     Methods:
         generate_yaml() -> dict: Generate the Kubernetes Job YAML configuration.
@@ -35,22 +38,28 @@ class KubernetesJob:
         self,
         name: str,
         image: str,
-        command: List[str] = None,
-        args: List[str] = None,
-        gpu_type: str = None,
-        gpu_product: str = None,
-        gpu_limit: int = None,
+        command: List[str],
+        args: Optional[List[str]] = None,
+        cpu_request: Optional[str] = None,
+        ram_request: Optional[str] = None,
+        storage_request: Optional[str] = None,
+        gpu_type: Optional[str] = None,
+        gpu_product: Optional[str] = None,
+        gpu_limit: Optional[int] = None,
         backoff_limit: int = 4,
         restart_policy: str = "Never",
-        shm_size: str = None,
-        secret_env_vars: dict = None,
-        env_vars: dict = None,
-        volume_mounts: dict = None,
+        shm_size: Optional[str] = None,
+        secret_env_vars: Optional[dict] = None,
+        env_vars: Optional[dict] = None,
+        volume_mounts: Optional[dict] = None,
     ):
         self.name = name
         self.image = image
         self.command = command
         self.args = args
+        self.cpu_request = cpu_request
+        self.ram_request = ram_request
+        self.storage_request = storage_request
         self.gpu_type = gpu_type
         self.gpu_product = gpu_product
         self.gpu_limit = gpu_limit
@@ -116,6 +125,10 @@ class KubernetesJob:
             "command": self.command,
             "args": self.args,
             "volumeMounts": [],
+            "resources": {
+                "requests": {},
+                "limits": {},
+            },
         }
 
         if not (
@@ -130,6 +143,33 @@ class KubernetesJob:
         container = self._add_shm_size(container)
         container = self._add_env_vars(container)
         container = self._add_volume_mounts(container)
+
+        if (
+            self.cpu_request is not None
+            or self.ram_request is not None
+            or self.storage_request is not None
+        ):
+            if "resources" not in container:
+                container["resources"] = {"requests": {}}
+
+            if "requests" not in container["resources"]:
+                container["resources"]["requests"] = {}
+
+        if self.cpu_request is not None:
+            container["resources"]["requests"]["cpu"] = self.cpu_request
+
+        if self.ram_request is not None:
+            container["resources"]["requests"]["memory"] = self.ram_request
+
+        if self.storage_request is not None:
+            container["resources"]["requests"][
+                "storage"
+            ] = self.storage_request
+
+        if self.gpu_type is not None and self.gpu_limit is not None:
+            container["resources"]["limits"][
+                f"{self.gpu_type}"
+            ] = self.gpu_limit
 
         job = {
             "apiVersion": "batch/v1",
@@ -250,14 +290,24 @@ def create_jobs_for_experiments(commands: List[str], *args, **kwargs):
     return jobs
 
 
+import subprocess
+import json
+
+
+import subprocess
+import json
+
+
 def create_pvc(
     pvc_name: str,
     storage: str,
     access_modes: list = None,
-    namespace: str = "default",
 ):
     if access_modes is None:
         access_modes = ["ReadWriteOnce"]
+
+    if isinstance(access_modes, str):
+        access_modes = [access_modes]
 
     pvc = {
         "apiVersion": "v1",
@@ -269,11 +319,20 @@ def create_pvc(
         },
     }
 
-    config.load_kube_config()
-    core_api = client.CoreV1Api()
-    core_api.create_namespaced_persistent_volume_claim(
-        namespace=namespace, body=pvc
-    )
+    # Convert the PVC dictionary to a JSON string
+    pvc_json = json.dumps(pvc)
+
+    # Write the JSON to a temporary file
+    with open("pvc.json", "w") as f:
+        f.write(pvc_json)
+
+    # Use kubectl to create the PVC from the JSON file
+    subprocess.run(["kubectl", "apply", "-f", "pvc.json"], check=True)
+
+    # Clean up the temporary file
+    subprocess.run(["rm", "pvc.json"], check=True)
+
+    return pvc_name
 
 
 def create_pv(

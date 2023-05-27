@@ -37,7 +37,7 @@ unique_id = time.strftime("%Y%m%d%H%M%S")
 
 
 job = KubernetesJob(
-    name=f"gate-node-3-{unique_id}",
+    name=f"gate-dev-{unique_id}",
     image="ghcr.io/antreasantoniou/gate:latest",
     command=["/bin/bash", "-c", "--"],
     args=["while true; do sleep 60; done;"],
@@ -46,12 +46,7 @@ job = KubernetesJob(
     shm_size="900G",  # "200G" is the maximum value for shm_size
     gpu_limit=1,
     backoff_limit=4,
-    # volume_mounts={
-    #     "gate-disk": {
-    #         "pvc": "gate-pvc-3",
-    #         "mountPath": "/data/",
-    #     },
-    # },
+    storage_request="1000Gi",
     env_vars=env_vars,
 )
 

@@ -6,29 +6,7 @@ from kubejobs import KubernetesJob, create_jobs_for_experiments, create_pvc
 from kubejobs.experiments.pvc_status import PVCStatus, get_pvc_status
 
 
-env_vars = dict(
-    NEPTUNE_API_TOKEN="eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLm5lcHR1bmUuYWkiLCJhcGlfdXJsIjoiaHR0cHM6Ly9hcHAubmVwdHVuZS5haSIsImFwaV9rZXkiOiJkOTFjMTY5Zi03ZGUwLTQ4ODYtYWI0Zi1kZDEzNjlkMGI5ZjQifQ==",
-    NEPTUNE_PROJECT="MachineLearningBrewery/gate-exp-0-8-6",
-    NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE="TRUE",
-    WANDB_API_KEY="821661c6ee1657a2717093701ab76574ae1a9be0",
-    WANDB_ENTITY="machinelearningbrewery",
-    WANDB_PROJECT="gate-exp-0-8-6",
-    KAGGLE_USERNAME="antreasantoniou",
-    KAGGLE_KEY="d14aab63e71334cfa118bd5251bf85da",
-    PYTEST_DIR="/data/",
-    EXPERIMENT_NAME="gate-exp-0-8-6",
-    HF_USERNAME="Antreas",
-    HF_TOKEN="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",
-    HF_CACHE_DIR="/data/",
-    TOKENIZERS_PARALLELISM="false",
-    CODE_DIR="/app/",
-    PROJECT_DIR="/app/",
-    EXPERIMENT_NAME_PREFIX="gate-exp",
-    EXPERIMENTS_DIR="/data/experiments/",
-    EXPERIMENT_DIR="/data/experiments/",
-    DATASET_DIR="/data/",
-    MODEL_DIR="/data/model/",
-)
+env_vars = dict()
 
 
 pvc_dict = get_pvc_status()

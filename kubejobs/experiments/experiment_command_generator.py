@@ -6,8 +6,8 @@ def build_image_classification_command(
 ):
     image_classification_template = (
         f"/opt/conda/envs/main/bin/accelerate-launch --mixed_precision=bf16 --gpu_ids=0 /app/gate/run.py "
-        f"exp_name={exp_name} model={model_name} {model_args} dataset={dataset_name} optimizer.lr={lr}"
-        f"trainer=image_classification evaluator=image_classification optimizer.lr=0.001 "
+        f"exp_name={exp_name} model={model_name} {model_args} dataset={dataset_name} optimizer.lr={lr} "
+        f"trainer=image_classification evaluator=image_classification "
         f"seed={seed} train_batch_size=128 eval_batch_size=128"
     )
     return image_classification_template
@@ -60,10 +60,12 @@ lr_dict = {
     "flexivit_base_1200ep_in1k": 1e-5,
     "witp-base16-wit": 1e-5,
     "talip-base16-wit": 1e-5,
+    "talip-base16-wita": 1e-5,
+    "talip-base16-witav": 1e-5,
+    "wits-base16-wit": 1e-5,
     "talis-base16-wit": 1e-5,
     "talis-base16-wita": 1e-5,
     "talis-base16-witav": 1e-5,
-    "wits-base16-wit": 1e-5,
 }
 
 model_dict = {
@@ -163,7 +165,7 @@ def generate_commands(prefix, seed_list, dataset_dict, model_dict, lr_dict):
                     model_name=model_value["model_name"],
                     dataset_name=dataset_value,
                     model_args=model_args,
-                    lr=lr_dict[model_value["model_name"]],
+                    lr=lr_dict[model_key],
                     seed=seed,
                 )
                 command_dict[exp_name] = command
@@ -176,7 +178,11 @@ def get_commands(prefix):
 
     # Generate all commands
     command_dict = generate_commands(
-        prefix, seed_list, dataset_dict, model_dict
+        prefix=prefix,
+        seed_list=seed_list,
+        dataset_dict=dataset_dict,
+        model_dict=model_dict,
+        lr_dict=lr_dict,
     )
 
     for name, command in command_dict.items():

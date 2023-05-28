@@ -9,9 +9,6 @@ import re
 
 from tqdm.auto import tqdm
 
-kubectl_command = (
-    "/home/eidf029/eidf029/aantoniou-infk8s/miniconda/envs/main/bin/kubectl"
-)
 import subprocess
 
 

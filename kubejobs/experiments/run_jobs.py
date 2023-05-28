@@ -43,7 +43,7 @@ env_vars = dict(
 
 pvc_dict = get_pvc_status()
 
-prefix = "herakles"
+prefix = "hephaestus"
 
 experiment_dict = get_commands(prefix=prefix)
 

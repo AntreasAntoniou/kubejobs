@@ -123,13 +123,15 @@ model_dict = {
 }
 
 
-def generate_commands(seed_list, dataset_dict, model_dict):
+def generate_commands(prefix, seed_list, dataset_dict, model_dict):
     command_dict = {}
     for dataset_key, dataset_value in dataset_dict.items():
         for model_key, model_value in model_dict.items():
             for seed in seed_list:
-                exp_name = f"{dataset_key}-{model_key}-{seed}".replace(
-                    "_", "-"
+                exp_name = (
+                    f"{prefix}-{dataset_key}-{model_key}-{seed}".replace(
+                        "_", "-"
+                    )
                 )
                 model_args = ""
                 if "timm_model_name" in model_value:
@@ -147,12 +149,14 @@ def generate_commands(seed_list, dataset_dict, model_dict):
     return command_dict
 
 
-def get_commands():
+def get_commands(prefix):
     # Generate a list of random seeds
-    seed_list = [42]  # , 1337, 2306]
+    seed_list = [1337, 2306, 42]  # , 42, 1337, 2306
 
     # Generate all commands
-    command_dict = generate_commands(seed_list, dataset_dict, model_dict)
+    command_dict = generate_commands(
+        prefix, seed_list, dataset_dict, model_dict
+    )
 
     for name, command in command_dict.items():
         print(f"Command for {name}: {command}")

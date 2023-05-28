@@ -43,15 +43,14 @@ env_vars = dict(
 
 pvc_dict = get_pvc_status()
 
-unique_id = "zeus"  # time.strftime("%Y%m%d%H%M%S")
-prefix = "plat"
+prefix = "herakles"
 
 experiment_dict = get_commands(prefix=prefix)
 
 # Initialize a dictionary to keep track of PVC usage
 pvc_usage = defaultdict(int)
 
-total_pvc_count = 100
+total_pvc_count = 50
 
 for i in range(total_pvc_count):
     pvc_name = f"gate-pvc-{i}"
@@ -74,7 +73,7 @@ for idx, (name, command) in tqdm(enumerate(experiment_dict.items())):
     pvc_usage[pvc_name] += 1
 
     job = KubernetesJob(
-        name=f"{name}-{unique_id}",
+        name=f"{name}",
         image="ghcr.io/antreasantoniou/gate:latest",
         command=["/bin/bash", "-c", "--"],
         args=[f"{command}"],

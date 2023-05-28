@@ -2,12 +2,12 @@ from rich import print
 
 
 def build_image_classification_command(
-    exp_name, model, dataset_name, model_args="", seed: int = 42
+    exp_name, model_name, dataset_name, model_args="", lr=1e-5, seed: int = 42
 ):
     image_classification_template = (
         f"/opt/conda/envs/main/bin/accelerate-launch --mixed_precision=bf16 --gpu_ids=0 /app/gate/run.py "
-        f"exp_name={exp_name} model={model} {model_args} dataset={dataset_name} "
-        f"trainer=image_classification evaluator=image_classification "
+        f"exp_name={exp_name} model={model_name} {model_args} dataset={dataset_name} optimizer.lr={lr}"
+        f"trainer=image_classification evaluator=image_classification optimizer.lr=0.001 "
         f"seed={seed} train_batch_size=128 eval_batch_size=128"
     )
     return image_classification_template
@@ -45,6 +45,26 @@ timm_model_names = [
     "resnext50_32x4d.a1_in1k",
     "flexivit_base.1200ep_in1k",
 ]
+
+lr_dict = {
+    "resnet50_a1_in1k": 1e-3,
+    "wide_resnet50_2_tv_in1k": 1e-3,
+    "resnext50_32x4d_a1_in1k": 1e-3,
+    "sam_vit_base16_224_in1k": 1e-5,
+    "augreg_vit_base16_224_in1k": 1e-5,
+    "dino_vit_base16_224": 1e-5,
+    "clip_vit_base16_224": 1e-5,
+    "laion_vit_base16_224": 1e-5,
+    "efficientnetv2_rw_s_ra2_in1k": 1e-5,
+    "deit3_base_patch16_224_fb_in1k": 1e-5,
+    "flexivit_base_1200ep_in1k": 1e-5,
+    "witp-base16-wit": 1e-5,
+    "talip-base16-wit": 1e-5,
+    "talis-base16-wit": 1e-5,
+    "talis-base16-wita": 1e-5,
+    "talis-base16-witav": 1e-5,
+    "wits-base16-wit": 1e-5,
+}
 
 model_dict = {
     "clip_vit_base16_224": dict(model_name="clip-classification"),
@@ -123,7 +143,7 @@ model_dict = {
 }
 
 
-def generate_commands(prefix, seed_list, dataset_dict, model_dict):
+def generate_commands(prefix, seed_list, dataset_dict, model_dict, lr_dict):
     command_dict = {}
     for dataset_key, dataset_value in dataset_dict.items():
         for model_key, model_value in model_dict.items():
@@ -139,11 +159,12 @@ def generate_commands(prefix, seed_list, dataset_dict, model_dict):
                 elif "model_repo_path" in model_value:
                     model_args = f"model.model_repo_path={model_value['model_repo_path']}"
                 command = build_image_classification_command(
-                    exp_name,
-                    model_value["model_name"],
-                    dataset_value,
-                    model_args,
-                    seed,
+                    exp_name=exp_name,
+                    model_name=model_value["model_name"],
+                    dataset_name=dataset_value,
+                    model_args=model_args,
+                    lr=lr_dict[model_value["model_name"]],
+                    seed=seed,
                 )
                 command_dict[exp_name] = command
     return command_dict

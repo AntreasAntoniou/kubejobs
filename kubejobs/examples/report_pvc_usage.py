@@ -43,6 +43,8 @@ def sort_key(pvc):
 
 # Print PVC usage status sorted by PVC name and index
 for pvc, used in sorted(pvc_usage.items(), key=sort_key):
+    if "gate" not in pvc:
+        continue
     if used:
         print(f"[green]PVC {pvc} is in use[/green]")
     else:

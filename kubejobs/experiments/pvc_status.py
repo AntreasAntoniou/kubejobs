@@ -21,10 +21,11 @@ def get_pvc_status():
 
     # Function to sort PVCs by name and index
     def sort_key(pvc):
-        match = re.match(r"([a-z-]+)-([0-9]+)", pvc, re.I)
-        if match:
-            name, index = match.groups()
-            return name, int(index)
+        if isinstance(pvc, str):
+            match = re.match(r"([a-z-]+)-([0-9]+)", pvc, re.I)
+            if match:
+                name, index = match.groups()
+                return name, int(index)
         return pvc, 0
 
     # Function to run a subprocess and return the stdout as a list
@@ -57,6 +58,8 @@ def get_pvc_status():
 
     # Populate the pvc_status dictionary
     for pvc, used in sorted(pvc_usage.items(), key=sort_key):
+        if "gate" not in pvc:
+            continue
         if used:
             pvc_status["in-use"].append(pvc)
         else:

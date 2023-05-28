@@ -11,5 +11,5 @@ if __name__ == "__main__":
     )
 
     print(
-        f"Created a local PersistentVolume named 'test-pvc' with 1Gi of storage."
+        "Created a local PersistentVolume named 'test-pvc' with 1Gi of storage."
     )

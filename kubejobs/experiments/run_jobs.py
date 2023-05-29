@@ -4,7 +4,12 @@ import time
 from tqdm.auto import tqdm
 
 from kubejobs import KubernetesJob, create_jobs_for_experiments, create_pvc
-from kubejobs.experiments.experiment_command_generator import get_commands
+from kubejobs.experiments.image_classification_command import (
+    get_commands as get_image_classification_commands,
+)
+from kubejobs.experiments.relational_reasoning_command import (
+    get_commands as get_relational_reasoning_commands,
+)
 from kubejobs.experiments.pvc_status import PVCStatus, get_pvc_status
 
 import logging
@@ -43,9 +48,9 @@ env_vars = dict(
 
 pvc_dict = get_pvc_status()
 
-prefix = "hephaestus"
+prefix = "athena"
 
-experiment_dict = get_commands(prefix=prefix)
+experiment_dict = get_relational_reasoning_commands(prefix=prefix)
 
 # Initialize a dictionary to keep track of PVC usage
 pvc_usage = defaultdict(int)

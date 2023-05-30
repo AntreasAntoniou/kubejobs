@@ -22,6 +22,10 @@ class KubernetesJob:
         storage_request (str, optional): Amount of storage to request. For example, "10Gi" for 10 gibibytes. Defaults to None.
         gpu_type (str, optional): Type of GPU resource, e.g. "nvidia.com/gpu". Defaults to None.
         gpu_product (str, optional): GPU product, e.g. "NVIDIA-A100-SXM4-80GB". Defaults to None.
+                                                    Possible choices: NVIDIA-A100-SXM4-80GB – a full non-MIG 80GB GPU
+                                                                      NVIDIA-A100-SXM4-40GB – a full non-MIG 40GB GPU
+                                                                      NVIDIA-A100-SXM4-40GB-MIG-3g.20gb – just under half-GPU
+                                                                      NVIDIA-A100-SXM4-40GB-MIG-1g.5gb – a seventh of a GPU
         gpu_limit (int, optional): Number of GPU resources to allocate. Defaults to None.
         backoff_limit (int, optional): Maximum number of retries before marking job as failed. Defaults to 4.
         restart_policy (str, optional): Restart policy for the job, default is "Never".

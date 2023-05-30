@@ -3,7 +3,11 @@ from collections import defaultdict
 import time
 from tqdm.auto import tqdm
 
-from kubejobs import KubernetesJob, create_jobs_for_experiments, create_pvc
+from kubejobs.jobs import (
+    KubernetesJob,
+    create_jobs_for_experiments,
+    create_pvc,
+)
 from kubejobs.experiments.image_classification_command import (
     get_commands as get_image_classification_commands,
 )
@@ -55,7 +59,7 @@ experiment_dict = get_relational_reasoning_commands(prefix=prefix)
 # Initialize a dictionary to keep track of PVC usage
 pvc_usage = defaultdict(int)
 
-total_pvc_count = 50
+total_pvc_count = 70
 
 for i in range(total_pvc_count):
     pvc_name = f"gate-pvc-{i}"

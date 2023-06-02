@@ -16,7 +16,7 @@ dev_requirements = [
 
 setup(
     name="kubejobs",
-    version="0.3.0",
+    version="0.3.1",
     description="A Python library for creating and running Kubernetes Jobs",
     author="Antreas Antoniou",
     author_email="iam@antreas.io",

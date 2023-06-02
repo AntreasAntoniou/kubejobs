@@ -2,18 +2,30 @@
 from collections import defaultdict
 import time
 from tqdm.auto import tqdm
+import random
 
 from kubejobs.jobs import (
     KubernetesJob,
     create_jobs_for_experiments,
     create_pvc,
 )
+
 from kubejobs.experiments.image_classification_command import (
     get_commands as get_image_classification_commands,
 )
 from kubejobs.experiments.relational_reasoning_command import (
     get_commands as get_relational_reasoning_commands,
 )
+from kubejobs.experiments.medical_image_classification_command import (
+    get_commands as get_medical_image_classification_commands,
+)
+from kubejobs.experiments.zero_shot_learning_command import (
+    get_commands as get_zero_shot_learning_commands,
+)
+from kubejobs.experiments.few_shot_learning_command import (
+    get_commands as get_few_shot_learning_commands,
+)
+
 from kubejobs.experiments.pvc_status import PVCStatus, get_pvc_status
 
 import logging
@@ -52,20 +64,28 @@ env_vars = dict(
 
 pvc_dict = get_pvc_status()
 
-prefix = "noctis"
+prefix = "mera"
 
-experiment_dict = get_image_classification_commands(prefix=prefix)
+experiment_dict = get_medical_image_classification_commands(prefix=prefix)
 
 # Initialize a dictionary to keep track of PVC usage
 pvc_usage = defaultdict(int)
 
 total_pvc_count = 30
 
+experiment_dict = list(experiment_dict.items())
+# Shuffle the list
+random.shuffle(experiment_dict)
+
+# Create a new dictionary from the shuffled list
+experiment_dict = dict(experiment_dict)
+
 for i in range(total_pvc_count):
     pvc_name = f"gate-pvc-{i}"
     pvc_name = create_pvc(
         pvc_name=pvc_name, storage="2Ti", access_modes="ReadWriteOnce"
     )
+
 
 for idx, (name, command) in tqdm(enumerate(experiment_dict.items())):
     pvc_dict: PVCStatus = get_pvc_status()

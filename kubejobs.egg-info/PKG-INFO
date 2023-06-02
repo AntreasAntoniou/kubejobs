@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: kubejobs
-Version: 0.3.0
+Version: 0.3.1
 Summary: A Python library for creating and running Kubernetes Jobs
 Home-page: https://github.com/AntreasAntoniou/kubejobs
 Author: Antreas Antoniou

@@ -121,41 +121,41 @@ model_dict = {
         clvrmath="timm-relational-reasoning",
         timm_model_name="flexivit_base.1200ep_in1k",
     ),
-    "wits-gbase16-wit": dict(
-        clvr="tali-relational-reasoning-multi-task",
-        clvrmath="tali-relational-reasoning",
-        model_repo_path="Antreas/wits-godzilla-base16-wit-42",
-    ),
-    "witp-gbase16-wit": dict(
-        clvr="tali-relational-reasoning-multi-task",
-        clvrmath="tali-relational-reasoning",
-        model_repo_path="Antreas/witp-godzilla-base16-wit-42",
-    ),
-    "talis-base16-wit": dict(
-        clvr="tali-relational-reasoning-multi-task",
-        clvrmath="tali-relational-reasoning",
-        model_repo_path="Antreas/talis-godzilla-base16-wit-42",
-    ),
-    "talis-gbase16-wita": dict(
-        clvr="tali-relational-reasoning-multi-task",
-        clvrmath="tali-relational-reasoning",
-        model_repo_path="Antreas/talis-godzilla-base16-wita-42",
-    ),
-    "talip-gbase16-wita": dict(
-        clvr="tali-relational-reasoning-multi-task",
-        clvrmath="tali-relational-reasoning",
-        model_repo_path="Antreas/talip-godzilla-base16-wita-42",
-    ),
-    "talis-base16-witav": dict(
-        clvr="tali-relational-reasoning-multi-task",
-        clvrmath="tali-relational-reasoning",
-        model_repo_path="Antreas/talis-godzilla-base16-witav-1337",
-    ),
-    "talip-gbase16-witav": dict(
-        clvr="tali-relational-reasoning-multi-task",
-        clvrmath="tali-relational-reasoning",
-        model_repo_path="Antreas/talip-godzilla-base16-witav-42",
-    ),
+    # "wits-gbase16-wit": dict(
+    #     clvr="tali-relational-reasoning-multi-task",
+    #     clvrmath="tali-relational-reasoning",
+    #     model_repo_path="Antreas/wits-godzilla-base16-wit-42",
+    # ),
+    # "witp-gbase16-wit": dict(
+    #     clvr="tali-relational-reasoning-multi-task",
+    #     clvrmath="tali-relational-reasoning",
+    #     model_repo_path="Antreas/witp-godzilla-base16-wit-42",
+    # ),
+    # "talis-base16-wit": dict(
+    #     clvr="tali-relational-reasoning-multi-task",
+    #     clvrmath="tali-relational-reasoning",
+    #     model_repo_path="Antreas/talis-godzilla-base16-wit-42",
+    # ),
+    # "talis-gbase16-wita": dict(
+    #     clvr="tali-relational-reasoning-multi-task",
+    #     clvrmath="tali-relational-reasoning",
+    #     model_repo_path="Antreas/talis-godzilla-base16-wita-42",
+    # ),
+    # "talip-gbase16-wita": dict(
+    #     clvr="tali-relational-reasoning-multi-task",
+    #     clvrmath="tali-relational-reasoning",
+    #     model_repo_path="Antreas/talip-godzilla-base16-wita-42",
+    # ),
+    # "talis-base16-witav": dict(
+    #     clvr="tali-relational-reasoning-multi-task",
+    #     clvrmath="tali-relational-reasoning",
+    #     model_repo_path="Antreas/talis-godzilla-base16-witav-1337",
+    # ),
+    # "talip-gbase16-witav": dict(
+    #     clvr="tali-relational-reasoning-multi-task",
+    #     clvrmath="tali-relational-reasoning",
+    #     model_repo_path="Antreas/talip-godzilla-base16-witav-42",
+    # ),
 }
 
 

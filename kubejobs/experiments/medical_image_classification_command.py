@@ -1,25 +1,29 @@
 from rich import print
 
 
+# accelerate launch --mixed_precision=bf16 gate/run.py exp_name=med-ham10k-clip-debug-2
+# model=clip-classification dataset=ham10k trainer=multi_class_classification
+# evaluator=multi_class_classification seed=2306 train_batch_size=128 eval_batch_size=128
+# learner.limit_val_iters=50 dataloader.num_workers=16 learner.train_iters=100
+# learner.evaluate_every_n_steps=50
+
+
 def build_command(
     exp_name, model_name, dataset_name, model_args="", lr=1e-5, seed: int = 42
 ):
     command_template = (
         f"/opt/conda/envs/main/bin/accelerate-launch --mixed_precision=bf16 --gpu_ids=0 /app/gate/run.py "
         f"exp_name={exp_name} model={model_name} {model_args} dataset={dataset_name} optimizer.lr={lr} "
-        f"trainer=image_classification evaluator=image_classification "
+        f"trainer=multi_class_classification evaluator=multi_class_classification "
         f"seed={seed} train_batch_size=128 eval_batch_size=128"
     )
     return command_template
 
 
 dataset_dict = {
-    "in1k": "imagenet1k-classification",
-    "c100": "cifar100",
-    "f101": "food101",
-    "stl10": "stl10",
-    "svhn": "svhn",
-    "p365": "places365",
+    "chx": "chexpert-classification",
+    "dr": "diabetic_retionopathy",
+    "ham10k": "ham10k",
 }
 
 

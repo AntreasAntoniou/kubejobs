@@ -19,6 +19,7 @@ kubejobs/examples/example_storage_write_read.py
 kubejobs/experiments/__init__.py
 kubejobs/experiments/few_shot_learning_commands.py
 kubejobs/experiments/image_classification_command.py
+kubejobs/experiments/medical_image_classification_command.py
 kubejobs/experiments/pvc_status.py
 kubejobs/experiments/relational_reasoning_command.py
 kubejobs/experiments/run_jobs.py

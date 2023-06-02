@@ -52,14 +52,14 @@ env_vars = dict(
 
 pvc_dict = get_pvc_status()
 
-prefix = "athena"
+prefix = "noctis"
 
-experiment_dict = get_relational_reasoning_commands(prefix=prefix)
+experiment_dict = get_image_classification_commands(prefix=prefix)
 
 # Initialize a dictionary to keep track of PVC usage
 pvc_usage = defaultdict(int)
 
-total_pvc_count = 70
+total_pvc_count = 30
 
 for i in range(total_pvc_count):
     pvc_name = f"gate-pvc-{i}"

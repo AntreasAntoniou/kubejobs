@@ -7,18 +7,20 @@ def build_command(
     command_template = (
         f"/opt/conda/envs/main/bin/accelerate-launch --mixed_precision=bf16 --gpu_ids=0 /app/gate/run.py "
         f"exp_name={exp_name} model={model_name} {model_args} dataset={dataset_name} optimizer.lr={lr} "
-        f"trainer=visual_relational_reasoning evaluator=visual_relational_reasoning "
-        f"seed={seed} train_batch_size=128 eval_batch_size=128"
+        f"trainer=image_classification evaluator=image_classification "
+        f"seed={seed} train_batch_size=1 eval_batch_size=1"
     )
     return command_template
 
 
-# accelerate launch --mixed_precision=bf16 gate/run.py exp_name=rr-timm-debug-clevr-0 model=timm-relational-reasoning dataset=clevr trainer=visual_relati
-# onal_reasoning evaluator=visual_relational_reasoning seed=2306 train_batch_size=128 eval_batch_size=128 learner.limit_val_iters=1
-
 dataset_dict = {
-    "clvr": "clevr",
-    "clvrmath": "clevr_math",
+    "aircraft-fs-classification": "airfs",
+    "cubirds-fs-classification": "cubfs",
+    "dtextures-fs-classification": "dtextfs",
+    "fungi-fs-classification": "fungifs",
+    "mini-imagenet-fs-classification": "miniinfs",
+    "omniglot-fs-classification": "omnifs",
+    "vgg-flowers-fs-classification": "vggfs",
 }
 
 tali_model_names = [
@@ -67,93 +69,73 @@ lr_dict = {
 }
 
 model_dict = {
-    "clip_vit_base16_224": dict(
-        clvr="clip-relational-reasoning-multi-task",
-        clvrmath="clip-relational-reasoning",
-    ),
+    "clip_vit_base16_224": dict(model_name="clip-few-shot-classification"),
     "laion_vit_base16_224": dict(
-        clvr="timm-relational-reasoning-multi-task",
-        clvrmath="timm-relational-reasoning",
+        model_name="timm-few-shot-classification",
         timm_model_name="vit_base_patch16_clip_224.laion2b",
     ),
     "resnet50_a1_in1k": dict(
-        clvr="timm-relational-reasoning-multi-task",
-        clvrmath="timm-relational-reasoning",
+        model_name="timm-few-shot-classification",
         timm_model_name="resnet50.a1_in1k",
     ),
     "sam_vit_base16_224_in1k": dict(
-        clvr="timm-relational-reasoning-multi-task",
-        clvrmath="timm-relational-reasoning",
+        model_name="timm-few-shot-classification",
         timm_model_name="vit_base_patch16_224.sam_in1k",
     ),
     "augreg_vit_base16_224_in1k": dict(
-        clvr="timm-relational-reasoning-multi-task",
-        clvrmath="timm-relational-reasoning",
+        model_name="timm-few-shot-classification",
         timm_model_name="vit_base_patch16_224.augreg_in1k",
     ),
     "dino_vit_base16_224": dict(
-        clvr="timm-relational-reasoning-multi-task",
-        clvrmath="timm-relational-reasoning",
+        model_name="timm-few-shot-classification",
         timm_model_name="vit_base_patch16_224.dino",
     ),
     "wide_resnet50_2_tv_in1k": dict(
-        clvr="timm-relational-reasoning-multi-task",
-        clvrmath="timm-relational-reasoning",
+        model_name="timm-few-shot-classification",
         timm_model_name="wide_resnet50_2.tv_in1k",
     ),
     "efficientnetv2_rw_s_ra2_in1k": dict(
-        clvr="timm-relational-reasoning-multi-task",
-        clvrmath="timm-relational-reasoning",
+        model_name="timm-few-shot-classification",
         timm_model_name="efficientnetv2_rw_s.ra2_in1k",
     ),
     "deit3_base_patch16_224_fb_in1k": dict(
-        clvr="timm-relational-reasoning-multi-task",
-        clvrmath="timm-relational-reasoning",
+        model_name="timm-few-shot-classification",
         timm_model_name="deit3_base_patch16_224.fb_in1k",
     ),
     "resnext50_32x4d_a1_in1k": dict(
-        clvr="timm-relational-reasoning-multi-task",
-        clvrmath="timm-relational-reasoning",
+        model_name="timm-few-shot-classification",
         timm_model_name="resnext50_32x4d.a1_in1k",
     ),
     "flexivit_base_1200ep_in1k": dict(
-        clvr="timm-relational-reasoning-multi-task",
-        clvrmath="timm-relational-reasoning",
+        model_name="timm-few-shot-classification",
         timm_model_name="flexivit_base.1200ep_in1k",
     ),
     "wits-gbase16-wit": dict(
-        clvr="tali-relational-reasoning-multi-task",
-        clvrmath="tali-relational-reasoning",
+        model_name="tali-classification",
         model_repo_path="Antreas/wits-godzilla-base16-wit-42",
     ),
     "witp-gbase16-wit": dict(
-        clvr="tali-relational-reasoning-multi-task",
-        clvrmath="tali-relational-reasoning",
+        model_name="tali-classification",
         model_repo_path="Antreas/witp-godzilla-base16-wit-42",
     ),
     "talis-base16-wit": dict(
-        clvr="tali-relational-reasoning-multi-task",
-        clvrmath="tali-relational-reasoning",
+        model_name="tali-classification",
         model_repo_path="Antreas/talis-godzilla-base16-wit-42",
     ),
     "talis-gbase16-wita": dict(
-        clvr="tali-relational-reasoning-multi-task",
-        clvrmath="tali-relational-reasoning",
+        model_name="tali-classification",
         model_repo_path="Antreas/talis-godzilla-base16-wita-42",
     ),
     "talip-gbase16-wita": dict(
-        clvr="tali-relational-reasoning-multi-task",
-        clvrmath="tali-relational-reasoning",
+        model_name="tali-classification",
         model_repo_path="Antreas/talip-godzilla-base16-wita-42",
     ),
     "talis-base16-witav": dict(
-        clvr="tali-relational-reasoning-multi-task",
-        clvrmath="tali-relational-reasoning",
+        model_name="tali-classification",
         model_repo_path="Antreas/talis-godzilla-base16-witav-1337",
     ),
     "talip-gbase16-witav": dict(
-        clvr="tali-relational-reasoning-multi-task",
-        clvrmath="tali-relational-reasoning",
+        model_name="tali-classification",
         model_repo_path="Antreas/talip-godzilla-base16-witav-42",
     ),
 }

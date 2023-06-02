@@ -1,16 +1,16 @@
 from rich import print
 
 
-def build_image_classification_command(
+def build_command(
     exp_name, model_name, dataset_name, model_args="", lr=1e-5, seed: int = 42
 ):
-    image_classification_template = (
+    command_template = (
         f"/opt/conda/envs/main/bin/accelerate-launch --mixed_precision=bf16 --gpu_ids=0 /app/gate/run.py "
         f"exp_name={exp_name} model={model_name} {model_args} dataset={dataset_name} optimizer.lr={lr} "
         f"trainer=image_classification evaluator=image_classification "
         f"seed={seed} train_batch_size=128 eval_batch_size=128"
     )
-    return image_classification_template
+    return command_template
 
 
 dataset_dict = {
@@ -22,16 +22,6 @@ dataset_dict = {
     "p365": "places365",
 }
 
-tali_model_names = [
-    "Antreas/witp-base16-wit-224-42",
-    "Antreas/talip-base16-wit-224-2306",
-    "Antreas/talip-base16-wita-224-2306",
-    "Antreas/talip-base16-witav-224-2306",
-    "Antreas/wits-base16-wit-224-2306",
-    "Antreas/talis-base16-wit-224-2306",
-    "Antreas/talis-base16-wita-224-2306",
-    "Antreas/talis-base16-witav-224-2306",
-]
 
 timm_model_names = [
     "vit_base_patch16_clip_224.laion2b",
@@ -110,39 +100,45 @@ model_dict = {
         model_name="timm-classification",
         timm_model_name="flexivit_base.1200ep_in1k",
     ),
-    "witp-base16-wit": dict(
+    "wits-gbase16-wit": dict(
         model_name="tali-classification",
-        model_repo_path="Antreas/witp-base16-wit-224-42",
+        model_repo_path="Antreas/wits-godzilla-base16-wit-42",
     ),
-    "talip-base16-wit": dict(
+    "witp-gbase16-wit": dict(
         model_name="tali-classification",
-        model_repo_path="Antreas/talip-base16-wit-224-2306",
-    ),
-    "talip-base16-wita": dict(
-        model_name="tali-classification",
-        model_repo_path="Antreas/talip-base16-wita-224-2306",
-    ),
-    "talip-base16-witav": dict(
-        model_name="tali-classification",
-        model_repo_path="Antreas/talip-base16-witav-224-2306",
-    ),
-    "wits-base16-wit": dict(
-        model_name="tali-classification",
-        model_repo_path="Antreas/wits-base16-wit-224-2306",
+        model_repo_path="Antreas/witp-godzilla-base16-wit-42",
     ),
     "talis-base16-wit": dict(
         model_name="tali-classification",
-        model_repo_path="Antreas/talis-base16-wit-224-2306",
+        model_repo_path="Antreas/talis-godzilla-base16-wit-42",
     ),
-    "talis-base16-wita": dict(
+    "talis-gbase16-wita": dict(
         model_name="tali-classification",
-        model_repo_path="Antreas/talis-base16-wita-224-2306",
+        model_repo_path="Antreas/talis-godzilla-base16-wita-42",
+    ),
+    "talip-gbase16-wita": dict(
+        model_name="tali-classification",
+        model_repo_path="Antreas/talip-godzilla-base16-wita-42",
     ),
     "talis-base16-witav": dict(
         model_name="tali-classification",
-        model_repo_path="Antreas/talis-base16-witav-224-2306",
+        model_repo_path="Antreas/talis-godzilla-base16-witav-1337",
+    ),
+    "talip-gbase16-witav": dict(
+        model_name="tali-classification",
+        model_repo_path="Antreas/talip-godzilla-base16-witav-42",
     ),
 }
+
+tali_model_names = [
+    "Antreas/wits-godzilla-base16-wit-42",
+    "Antreas/witp-godzilla-base16-wit-42",
+    "Antreas/talis-godzilla-base16-wit-42",
+    "Antreas/talis-godzilla-base16-wita-42",
+    "Antreas/talip-godzilla-base16-wita-42",
+    "Antreas/talis-godzilla-base16-witav-1337",
+    "Antreas/talip-godzilla-base16-witav-42",
+]
 
 
 def generate_commands(prefix, seed_list, dataset_dict, model_dict, lr_dict):
@@ -160,7 +156,7 @@ def generate_commands(prefix, seed_list, dataset_dict, model_dict, lr_dict):
                     model_args = f"model.timm_model_name={model_value['timm_model_name']}"
                 elif "model_repo_path" in model_value:
                     model_args = f"model.model_repo_path={model_value['model_repo_path']}"
-                command = build_image_classification_command(
+                command = build_command(
                     exp_name=exp_name,
                     model_name=model_value["model_name"],
                     dataset_name=dataset_value,

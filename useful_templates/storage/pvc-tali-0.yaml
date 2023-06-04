@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: tali-pvc-0
+  name: tali-pvc-2
 spec:
   accessModes:
     - ReadWriteOnce

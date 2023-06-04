@@ -128,6 +128,7 @@ class KubernetesJob:
             "image": self.image,
             "command": self.command,
             "args": self.args,
+            "imagePullPolicy": "Always",
             "volumeMounts": [],
             "resources": {
                 "requests": {},

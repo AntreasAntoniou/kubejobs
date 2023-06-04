@@ -8,7 +8,7 @@ def build_command(
         f"/opt/conda/envs/main/bin/accelerate-launch --mixed_precision=bf16 --gpu_ids=0 /app/gate/run.py "
         f"exp_name={exp_name} model={model_name} {model_args} dataset={dataset_name} optimizer.lr={lr} "
         f"trainer=visual_relational_reasoning evaluator=visual_relational_reasoning "
-        f"seed={seed} train_batch_size=128 eval_batch_size=128"
+        f"seed={seed} train_batch_size=128 eval_batch_size=128 eval_batch_size=1 learner.limit_val_iters=50 learner.evaluate_every_n_steps=25 train_iters=50"
     )
     return command_template
 
@@ -188,7 +188,7 @@ def generate_commands(prefix, seed_list, dataset_dict, model_dict, lr_dict):
 
 def get_commands(prefix):
     # Generate a list of random seeds
-    seed_list = [1337, 2306, 42]  # , 42, 1337, 2306
+    seed_list = [1337]  # , 2306, 42]  # , 42, 1337, 2306
 
     # Generate all commands
     command_dict = generate_commands(

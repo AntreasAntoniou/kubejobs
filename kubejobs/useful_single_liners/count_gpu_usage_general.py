@@ -72,4 +72,6 @@ def count_gpu_usage():
     return gpu_usage
 
 
-print(count_gpu_usage())
+if __name__ == "__main__":
+    gpu_usage = count_gpu_usage()
+    print(gpu_usage)

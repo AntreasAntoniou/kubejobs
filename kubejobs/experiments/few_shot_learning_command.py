@@ -5,22 +5,32 @@ def build_command(
     exp_name, model_name, dataset_name, model_args="", lr=1e-5, seed: int = 42
 ):
     command_template = (
-        f"/opt/conda/envs/main/bin/accelerate-launch --mixed_precision=bf16 --gpu_ids=0 /app/gate/run.py "
+        f"rm -rf /data/cubirds200; /opt/conda/envs/main/bin/accelerate-launch --mixed_precision=bf16 --gpu_ids=0 /app/gate/run.py "
         f"exp_name={exp_name} model={model_name} {model_args} dataset={dataset_name} optimizer.lr={lr} "
         f"trainer=image_classification evaluator=image_classification "
-        f"seed={seed} train_batch_size=1 eval_batch_size=1"
+        f"seed={seed} train_batch_size=1 eval_batch_size=1 learner.limit_val_iters=50 learner.evaluate_every_n_steps=25 train_iters=50"
     )
     return command_template
 
 
+# dataset_dict = {
+#     "aircraft-fs-classification": "airfs",
+#     "cubirds-fs-classification": "cubfs",
+#     "dtextures-fs-classification": "dtextfs",
+#     "fungi-fs-classification": "fungifs",
+#     "mini-imagenet-fs-classification": "miniinfs",
+#     "omniglot-fs-classification": "omnifs",
+#     "vgg-flowers-fs-classification": "vggfs",
+# }
+
 dataset_dict = {
-    "aircraft-fs-classification": "airfs",
-    "cubirds-fs-classification": "cubfs",
-    "dtextures-fs-classification": "dtextfs",
-    "fungi-fs-classification": "fungifs",
-    "mini-imagenet-fs-classification": "miniinfs",
-    "omniglot-fs-classification": "omnifs",
-    "vgg-flowers-fs-classification": "vggfs",
+    "airfs": "aircraft-fs-classification",
+    "cubfs": "cubirds-fs-classification",
+    "dtextfs": "dtextures-fs-classification",
+    "fungifs": "fungi-fs-classification",
+    "miniinfs": "mini-imagenet-fs-classification",
+    "omnifs": "omniglot-fs-classification",
+    "vggfs": "vgg-flowers-fs-classification",
 }
 
 tali_model_names = [
@@ -69,45 +79,47 @@ lr_dict = {
 }
 
 model_dict = {
-    "clip_vit_base16_224": dict(model_name="clip-few-shot-classification"),
+    "clip_vit_base16_224": dict(
+        model_name="clip-protonet-few-shot-classification"
+    ),
     "laion_vit_base16_224": dict(
-        model_name="timm-few-shot-classification",
+        model_name="timm-protonet-few-shot-classification",
         timm_model_name="vit_base_patch16_clip_224.laion2b",
     ),
     "resnet50_a1_in1k": dict(
-        model_name="timm-few-shot-classification",
+        model_name="timm-protonet-few-shot-classification",
         timm_model_name="resnet50.a1_in1k",
     ),
     "sam_vit_base16_224_in1k": dict(
-        model_name="timm-few-shot-classification",
+        model_name="timm-protonet-few-shot-classification",
         timm_model_name="vit_base_patch16_224.sam_in1k",
     ),
     "augreg_vit_base16_224_in1k": dict(
-        model_name="timm-few-shot-classification",
+        model_name="timm-protonet-few-shot-classification",
         timm_model_name="vit_base_patch16_224.augreg_in1k",
     ),
     "dino_vit_base16_224": dict(
-        model_name="timm-few-shot-classification",
+        model_name="timm-protonet-few-shot-classification",
         timm_model_name="vit_base_patch16_224.dino",
     ),
     "wide_resnet50_2_tv_in1k": dict(
-        model_name="timm-few-shot-classification",
+        model_name="timm-protonet-few-shot-classification",
         timm_model_name="wide_resnet50_2.tv_in1k",
     ),
     "efficientnetv2_rw_s_ra2_in1k": dict(
-        model_name="timm-few-shot-classification",
+        model_name="timm-protonet-few-shot-classification",
         timm_model_name="efficientnetv2_rw_s.ra2_in1k",
     ),
     "deit3_base_patch16_224_fb_in1k": dict(
-        model_name="timm-few-shot-classification",
+        model_name="timm-protonet-few-shot-classification",
         timm_model_name="deit3_base_patch16_224.fb_in1k",
     ),
     "resnext50_32x4d_a1_in1k": dict(
-        model_name="timm-few-shot-classification",
+        model_name="timm-protonet-few-shot-classification",
         timm_model_name="resnext50_32x4d.a1_in1k",
     ),
     "flexivit_base_1200ep_in1k": dict(
-        model_name="timm-few-shot-classification",
+        model_name="timm-protonet-few-shot-classification",
         timm_model_name="flexivit_base.1200ep_in1k",
     ),
     # "wits-gbase16-wit": dict(
@@ -158,7 +170,7 @@ def generate_commands(prefix, seed_list, dataset_dict, model_dict, lr_dict):
                     model_args = f"model.model_repo_path={model_value['model_repo_path']}"
                 command = build_command(
                     exp_name=exp_name,
-                    model_name=model_value[dataset_key],
+                    model_name=model_value["model_name"],
                     dataset_name=dataset_value,
                     model_args=model_args,
                     lr=lr_dict[model_key],
@@ -170,7 +182,7 @@ def generate_commands(prefix, seed_list, dataset_dict, model_dict, lr_dict):
 
 def get_commands(prefix):
     # Generate a list of random seeds
-    seed_list = [1337, 2306, 42]  # , 42, 1337, 2306
+    seed_list = [1337]  # , 2306, 42]  # , 42, 1337, 2306
 
     # Generate all commands
     command_dict = generate_commands(

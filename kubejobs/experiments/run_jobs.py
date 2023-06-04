@@ -3,12 +3,34 @@ from collections import defaultdict
 import time
 from tqdm.auto import tqdm
 import random
+from rich import print
 
 from kubejobs.jobs import (
     KubernetesJob,
     create_jobs_for_experiments,
     create_pvc,
 )
+from kubejobs.useful_single_liners.count_gpu_usage_general import (
+    count_gpu_usage,
+)
+
+gpu_type_to_max_count = {
+    "NVIDIA-A100-SXM4-80GB": 32,
+    "NVIDIA-A100-SXM4-40GB": 70,
+}
+
+
+def get_gpu_type_to_use():
+    active_gpus = count_gpu_usage()["active"]
+    available_gpu_types = []
+
+    for key, value in active_gpus.items():
+        remaining_gpu_count = gpu_type_to_max_count[key] - value
+        if remaining_gpu_count > 0:
+            available_gpu_types.append(key)
+
+    return random.choice(available_gpu_types)
+
 
 from kubejobs.experiments.image_classification_command import (
     get_commands as get_image_classification_commands,
@@ -64,14 +86,44 @@ env_vars = dict(
 
 pvc_dict = get_pvc_status()
 
-prefix = "mera"
+prefix = "debug"
 
-experiment_dict = get_medical_image_classification_commands(prefix=prefix)
+# zs_experiment_dict = get_zero_shot_learning_commands(prefix=prefix)
+# fs_experiment_dict = get_few_shot_learning_commands(prefix=prefix)
+med_experiment_dict = get_medical_image_classification_commands(prefix=prefix)
+
+
+im_class_experiment_dict = get_image_classification_commands(prefix=prefix)
+# rr_experiment_dict = get_relational_reasoning_commands(prefix=prefix)
+
+experiment_dict = (
+    # zs_experiment_dict
+    # | fs_experiment_dict
+    med_experiment_dict
+    | im_class_experiment_dict
+    # | rr_experiment_dict
+)
+
+for name, command in experiment_dict.items():
+    print(f"Command for {name}: {command}")
+
+print(
+    f"Total number of commands: {len(experiment_dict)}, each needs 1 GPU hour, so total GPU hours: {len(experiment_dict)}"
+)
+
+# A summary of the GPU setup is:
+
+# * 32 full Nvidia A100 80 GB GPUs
+# * 70 full Nvidia A100 40 GB GPUs
+# * 14 MIG Nvidia A100 40 GB GPUs equating to 28 Nvidia A100 3G.20GB GPUs
+# * 20 MIG Nvidia A100 40 GB GPU equating to 140 A100 1G.5GB GPUs
+
+# Total A100s in varying configurations: 136.
 
 # Initialize a dictionary to keep track of PVC usage
 pvc_usage = defaultdict(int)
 
-total_pvc_count = 30
+total_pvc_count = 50
 
 experiment_dict = list(experiment_dict.items())
 # Shuffle the list
@@ -107,7 +159,7 @@ for idx, (name, command) in tqdm(enumerate(experiment_dict.items())):
         command=["/bin/bash", "-c", "--"],
         args=[f"{command}"],
         gpu_type="nvidia.com/gpu",
-        gpu_product="NVIDIA-A100-SXM4-40GB",
+        gpu_product=get_gpu_type_to_use(),
         shm_size="100G",  # "200G" is the maximum value for shm_size
         gpu_limit=1,
         backoff_limit=4,

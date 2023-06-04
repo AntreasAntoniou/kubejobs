@@ -1,7 +1,7 @@
 # Example usage:
 import time
 
-from kubejobs import KubernetesJob, create_jobs_for_experiments, create_pvc
+from kubejobs.jobs import KubernetesJob
 
 
 env_vars = {
@@ -37,20 +37,36 @@ unique_id = time.strftime("%Y%m%d%H%M%S")
 
 
 job = KubernetesJob(
-    name=f"gate-node-4-{unique_id}",
+    name="gate-node-0",
     image="ghcr.io/antreasantoniou/gate:latest",
     command=["/bin/bash", "-c", "--"],
     args=["while true; do sleep 60; done;"],
     gpu_type="nvidia.com/gpu",
     gpu_product="NVIDIA-A100-SXM4-80GB",
-    shm_size="400",  # "200G" is the maximum value for shm_size
-    gpu_limit=3,
+    shm_size="900G",  # "200G" is the maximum value for shm_size
+    gpu_limit=1,
     backoff_limit=4,
     volume_mounts={
-        "gate-disk": {
-            "pvc": "tali-pvc-0",
+        "gate-disk-0": {
+            "pvc": "gate-pvc-0",
             "mountPath": "/data/",
         },
+        # "tali-disk-0": {
+        #     "pvc": "datasets-pvc-0",
+        #     "mountPath": "/data/",
+        # },
+        # "tali-disk-1": {
+        #     "pvc": "tali-pvc-1",
+        #     "mountPath": "/data0/",
+        # },
+        # "tali-disk-2": {
+        #     "pvc": "tali-pvc-2",
+        #     "mountPath": "/data1/",
+        # },
+        # "tali-disk-0": {
+        #     "pvc": "tali-pvc-0",
+        #     "mountPath": "/data/",
+        # },
     },
     env_vars=env_vars,
 )

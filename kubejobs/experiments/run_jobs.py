@@ -94,14 +94,14 @@ med_experiment_dict = get_medical_image_classification_commands(prefix=prefix)
 
 
 im_class_experiment_dict = get_image_classification_commands(prefix=prefix)
-# rr_experiment_dict = get_relational_reasoning_commands(prefix=prefix)
+rr_experiment_dict = get_relational_reasoning_commands(prefix=prefix)
 
 experiment_dict = (
     # zs_experiment_dict
     # | fs_experiment_dict
     med_experiment_dict
     | im_class_experiment_dict
-    # | rr_experiment_dict
+    | rr_experiment_dict
 )
 
 for name, command in experiment_dict.items():
@@ -160,7 +160,7 @@ for idx, (name, command) in tqdm(enumerate(experiment_dict.items())):
         args=[f"{command}"],
         gpu_type="nvidia.com/gpu",
         gpu_product=get_gpu_type_to_use(),
-        shm_size="100G",  # "200G" is the maximum value for shm_size
+        shm_size="1000G",  # "200G" is the maximum value for shm_size
         gpu_limit=1,
         backoff_limit=4,
         volume_mounts={

@@ -86,7 +86,7 @@ env_vars = dict(
 
 pvc_dict = get_pvc_status()
 
-prefix = "debug"
+prefix = "hades"
 
 # zs_experiment_dict = get_zero_shot_learning_commands(prefix=prefix)
 # fs_experiment_dict = get_few_shot_learning_commands(prefix=prefix)

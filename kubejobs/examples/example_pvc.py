@@ -1,6 +1,6 @@
 from rich import print
 
-from kubejobs import create_pv
+from kubejobs.jobs import create_pv
 from kubejobs.jobs import create_pvc
 
 if __name__ == "__main__":

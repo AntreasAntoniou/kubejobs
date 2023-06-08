@@ -7,6 +7,15 @@ import yaml
 from kubernetes import client, config
 from rich import print
 
+import logging
+from rich.logging import RichHandler
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+handler = RichHandler(markup=True)
+handler.setFormatter(logging.Formatter("%(message)s"))
+logger.addHandler(handler)
+
 
 class KubernetesJob:
     """
@@ -239,10 +248,23 @@ class KubernetesJob:
 
         # Run the kubectl command with --validate=False
         cmd = ["kubectl", "apply", "-f", "temp_job.yaml", "--validate=False"]
-        subprocess.run(cmd, check=True)
+        result = 1
+        try:
+            result = subprocess.run(
+                cmd,
+                check=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+            )
+        except subprocess.CalledProcessError as e:
+            logger.debug(
+                f"Command failed with return code {e.returncode}, stderr: {e.stderr}"
+            )
 
         # Remove the temporary file
         os.remove("temp_job.yaml")
+        return result
 
     @classmethod
     def from_command_line(cls):

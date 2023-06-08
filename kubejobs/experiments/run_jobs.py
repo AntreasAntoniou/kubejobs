@@ -5,6 +5,7 @@ from tqdm.auto import tqdm
 import random
 from rich import print
 
+
 from kubejobs.jobs import (
     KubernetesJob,
     create_jobs_for_experiments,
@@ -25,11 +26,16 @@ def get_gpu_type_to_use():
     available_gpu_types = []
 
     for key, value in active_gpus.items():
-        remaining_gpu_count = gpu_type_to_max_count[key] - value
-        if remaining_gpu_count > 0:
-            available_gpu_types.append(key)
+        if key in gpu_type_to_max_count:
+            remaining_gpu_count = gpu_type_to_max_count[key] - value
+            if remaining_gpu_count > 0:
+                available_gpu_types.append(key)
 
-    return random.choice(available_gpu_types)
+    return (
+        random.choice(available_gpu_types)
+        if len(available_gpu_types) > 0
+        else None
+    )
 
 
 from kubejobs.experiments.image_classification_command import (
@@ -88,28 +94,20 @@ pvc_dict = get_pvc_status()
 
 prefix = "hades"
 
-# zs_experiment_dict = get_zero_shot_learning_commands(prefix=prefix)
-# fs_experiment_dict = get_few_shot_learning_commands(prefix=prefix)
+zs_experiment_dict = get_zero_shot_learning_commands(prefix=prefix)
+fs_experiment_dict = get_few_shot_learning_commands(prefix=prefix)
 med_experiment_dict = get_medical_image_classification_commands(prefix=prefix)
-
-
 im_class_experiment_dict = get_image_classification_commands(prefix=prefix)
 rr_experiment_dict = get_relational_reasoning_commands(prefix=prefix)
 
 experiment_dict = (
-    # zs_experiment_dict
-    # | fs_experiment_dict
-    med_experiment_dict
+    zs_experiment_dict
+    | fs_experiment_dict
+    | med_experiment_dict
     | im_class_experiment_dict
     | rr_experiment_dict
 )
 
-for name, command in experiment_dict.items():
-    print(f"Command for {name}: {command}")
-
-print(
-    f"Total number of commands: {len(experiment_dict)}, each needs 1 GPU hour, so total GPU hours: {len(experiment_dict)}"
-)
 
 # A summary of the GPU setup is:
 
@@ -132,12 +130,23 @@ random.shuffle(experiment_dict)
 # Create a new dictionary from the shuffled list
 experiment_dict = dict(experiment_dict)
 
-for i in range(total_pvc_count):
-    pvc_name = f"gate-pvc-{i}"
-    pvc_name = create_pvc(
-        pvc_name=pvc_name, storage="2Ti", access_modes="ReadWriteOnce"
-    )
+experiment_dict = {
+    key: value for key, value in experiment_dict.items() if "winogr" not in key
+}
 
+for name, command in experiment_dict.items():
+    print(f"Command for {name}: {command}")
+
+print(
+    f"Total number of commands: {len(experiment_dict)}, each needs 1 GPU hour, so total GPU hours: {len(experiment_dict)}"
+)
+
+# for i in range(total_pvc_count):
+#     pvc_name = f"gate-pvc-{i}"
+#     pvc_name = create_pvc(
+#         pvc_name=pvc_name, storage="2Ti", access_modes="ReadWriteOnce"
+#     )
+job_succesfully_launched = False
 
 for idx, (name, command) in tqdm(enumerate(experiment_dict.items())):
     pvc_dict: PVCStatus = get_pvc_status()
@@ -152,6 +161,10 @@ for idx, (name, command) in tqdm(enumerate(experiment_dict.items())):
 
     # Increment the usage count for the selected PVC
     pvc_usage[pvc_name] += 1
+    gpu_type = None
+    while gpu_type is None and job_succesfully_launched:
+        gpu_type = get_gpu_type_to_use()
+        job_succesfully_launched = False
 
     job = KubernetesJob(
         name=f"{name}",
@@ -159,8 +172,8 @@ for idx, (name, command) in tqdm(enumerate(experiment_dict.items())):
         command=["/bin/bash", "-c", "--"],
         args=[f"{command}"],
         gpu_type="nvidia.com/gpu",
-        gpu_product=get_gpu_type_to_use(),
-        shm_size="1000G",  # "200G" is the maximum value for shm_size
+        gpu_product=gpu_type,
+        shm_size="100G",  # this is key for pytorch dataloaders and other operations that need access to shared memory (RAM) under the /dev/shm directory
         gpu_limit=1,
         backoff_limit=4,
         volume_mounts={
@@ -173,8 +186,11 @@ for idx, (name, command) in tqdm(enumerate(experiment_dict.items())):
     )
 
     job_yaml = job.generate_yaml()
+    print(f"Attemping to launch job {name}")
     try:
-        job.run()
+        result = job.run()
+        job_succesfully_launched = result == 0
     except Exception as e:
-        logger.warning(f"Job {name} failed with error: {e}")
+        logger.info(f"Job {name} failed with error: {e}")
+
     time.sleep(2)

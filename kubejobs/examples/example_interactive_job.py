@@ -38,12 +38,12 @@ unique_id = time.strftime("%Y%m%d%H%M%S")
 
 job = KubernetesJob(
     name="gate-node-0",
-    image="ghcr.io/antreasantoniou/gate:latest",
+    image="ghcr.io/antreasantoniou/gate:dev-latest",
     command=["/bin/bash", "-c", "--"],
     args=["while true; do sleep 60; done;"],
     gpu_type="nvidia.com/gpu",
     gpu_product="NVIDIA-A100-SXM4-80GB",
-    shm_size="900G",  # "200G" is the maximum value for shm_size
+    shm_size="100G",  # "200G" is the maximum value for shm_size
     gpu_limit=1,
     backoff_limit=4,
     volume_mounts={
@@ -57,7 +57,7 @@ job = KubernetesJob(
         # },
         # "tali-disk-1": {
         #     "pvc": "tali-pvc-1",
-        #     "mountPath": "/data0/",
+        #     "mountPath": "/data/",
         # },
         # "tali-disk-2": {
         #     "pvc": "tali-pvc-2",

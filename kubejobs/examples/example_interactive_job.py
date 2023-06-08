@@ -13,9 +13,7 @@ env_vars = {
 unique_id = time.strftime("%Y%m%d%H%M%S")
 
 # create some persistent storage to keep around model weights, and perhaps data if you need it
-create_pvc(
-    pvc_name="my-data-pvc-0", storage="100Gi", access_modes="ReadWriteOnce"
-)
+create_pvc(pvc_name="my-data-pvc-0", storage="100Gi", access_modes="ReadWriteOnce")
 
 job = KubernetesJob(
     name="gate-node-0",

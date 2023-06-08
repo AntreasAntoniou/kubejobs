@@ -1,8 +1,9 @@
-import subprocess
 import json
-from rich import print
-from rich.table import Table, StyleType
+import subprocess
+
 import fire
+from rich import print
+from rich.table import StyleType, Table
 from tqdm.auto import tqdm
 
 

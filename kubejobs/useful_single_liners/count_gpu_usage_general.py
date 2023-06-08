@@ -1,15 +1,11 @@
-import subprocess
 import re
-import yaml
+import subprocess
 
+import yaml
 from rich import print
 from rich.console import Console
 from rich.table import Table
-import re
-
 from tqdm.auto import tqdm
-
-import subprocess
 
 
 def run_subprocess(command):

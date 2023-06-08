@@ -1,3 +1,4 @@
+import logging
 import os
 import subprocess
 from typing import List, Optional
@@ -6,8 +7,6 @@ import fire
 import yaml
 from kubernetes import client, config
 from rich import print
-
-import logging
 from rich.logging import RichHandler
 
 logger = logging.getLogger(__name__)
@@ -317,12 +316,8 @@ def create_jobs_for_experiments(commands: List[str], *args, **kwargs):
     return jobs
 
 
-import subprocess
 import json
-
-
 import subprocess
-import json
 
 
 def create_pvc(

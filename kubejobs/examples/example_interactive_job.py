@@ -3,7 +3,6 @@ import time
 
 from kubejobs.jobs import KubernetesJob, create_pvc
 
-
 env_vars = {
     "DATASET_DIR": "/data/",
     "MODEL_DIR": "/data/model/",

@@ -16,11 +16,11 @@ dev_requirements = [
 
 setup(
     name="kubejobs",
-    version="0.1.0",
+    version="0.3.1",
     description="A Python library for creating and running Kubernetes Jobs",
-    author="Your Name",
-    author_email="your.email@example.com",
-    url="https://github.com/yourusername/kubejobs",
+    author="Antreas Antoniou",
+    author_email="iam@antreas.io",
+    url="https://github.com/AntreasAntoniou/kubejobs",
     packages=find_packages(),
     install_requires=requirements,
     extras_require={

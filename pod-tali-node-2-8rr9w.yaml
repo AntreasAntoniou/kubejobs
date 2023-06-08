@@ -1,0 +1,188 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    cni.projectcalico.org/containerID: ea02f68cbefde11fe906778836c5a8c400299a6c27c146468a796adbb1ccd0f7
+    cni.projectcalico.org/podIP: 10.42.46.240/32
+    cni.projectcalico.org/podIPs: 10.42.46.240/32
+    kubernetes.io/psp: global-unrestricted-psp
+  creationTimestamp: "2023-06-07T23:00:30Z"
+  finalizers:
+  - batch.kubernetes.io/job-tracking
+  generateName: tali-node-2-
+  labels:
+    controller-uid: fbe389ae-d505-40e0-8b52-be37375b8cfe
+    job-name: tali-node-2
+  name: tali-node-2-8rr9w
+  namespace: informatics
+  ownerReferences:
+  - apiVersion: batch/v1
+    blockOwnerDeletion: true
+    controller: true
+    kind: Job
+    name: tali-node-2
+    uid: fbe389ae-d505-40e0-8b52-be37375b8cfe
+  resourceVersion: "80364977"
+  uid: 43ec125d-e05b-440b-b905-7130f7a0c8cc
+spec:
+  containers:
+  - args:
+    - while true; do sleep 60; done;
+    command:
+    - /bin/bash
+    - -c
+    - 
+    env:
+    - name: NEPTUNE_API_TOKEN
+      value: eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLm5lcHR1bmUuYWkiLCJhcGlfdXJsIjoiaHR0cHM6Ly9hcHAubmVwdHVuZS5haSIsImFwaV9rZXkiOiJkOTFjMTY5Zi03ZGUwLTQ4ODYtYWI0Zi1kZDEzNjlkMGI5ZjQifQ==
+    - name: NEPTUNE_PROJECT
+      value: MachineLearningBrewery/gate-exp-0-8-6
+    - name: NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE
+      value: "TRUE"
+    - name: WANDB_API_KEY
+      value: 821661c6ee1657a2717093701ab76574ae1a9be0
+    - name: WANDB_ENTITY
+      value: machinelearningbrewery
+    - name: WANDB_PROJECT
+      value: gate-exp-0-8-6
+    - name: KAGGLE_USERNAME
+      value: antreasantoniou
+    - name: KAGGLE_KEY
+      value: d14aab63e71334cfa118bd5251bf85da
+    - name: PYTEST_DIR
+      value: /data/
+    - name: EXPERIMENT_NAME
+      value: gate-exp-0-8-6
+    - name: HF_USERNAME
+      value: Antreas
+    - name: HF_TOKEN
+      value: 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
+    - name: HF_CACHE_DIR
+      value: /data/
+    - name: TOKENIZERS_PARALLELISM
+      value: "false"
+    - name: CODE_DIR
+      value: /app/
+    - name: PROJECT_DIR
+      value: /app/
+    - name: EXPERIMENT_NAME_PREFIX
+      value: gate-exp
+    - name: EXPERIMENTS_DIR
+      value: /data/experiments/
+    - name: EXPERIMENT_DIR
+      value: /data/experiments/
+    - name: TALI_DATASET_DIR
+      value: /tali-data/
+    - name: WIT_DATASET_DIR
+      value: /tali-data/wit/
+    - name: DATASET_DIR
+      value: /data/
+    - name: MODEL_DIR
+      value: /data/model/
+    image: ghcr.io/antreasantoniou/gate:latest
+    imagePullPolicy: Always
+    name: tali-node-2
+    resources:
+      limits:
+        nvidia.com/gpu: "1"
+      requests:
+        nvidia.com/gpu: "1"
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /dev/shm
+      name: dshm
+    - mountPath: /data/
+      name: tali-disk-1
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-l2fjd
+      readOnly: true
+  dnsPolicy: ClusterFirst
+  enableServiceLinks: true
+  nodeName: gpu1-vm14
+  nodeSelector:
+    nvidia.com/gpu.product: NVIDIA-A100-SXM4-40GB
+  preemptionPolicy: PreemptLowerPriority
+  priority: 0
+  restartPolicy: Never
+  schedulerName: default-scheduler
+  securityContext: {}
+  serviceAccount: default
+  serviceAccountName: default
+  terminationGracePeriodSeconds: 30
+  tolerations:
+  - effect: NoExecute
+    key: node.kubernetes.io/not-ready
+    operator: Exists
+    tolerationSeconds: 300
+  - effect: NoExecute
+    key: node.kubernetes.io/unreachable
+    operator: Exists
+    tolerationSeconds: 300
+  - effect: NoSchedule
+    key: informatics
+    operator: Equal
+    value: "True"
+  volumes:
+  - emptyDir:
+      medium: Memory
+      sizeLimit: 900G
+    name: dshm
+  - name: tali-disk-1
+    persistentVolumeClaim:
+      claimName: tali-pvc-1
+  - name: kube-api-access-l2fjd
+    projected:
+      defaultMode: 420
+      sources:
+      - serviceAccountToken:
+          expirationSeconds: 3607
+          path: token
+      - configMap:
+          items:
+          - key: ca.crt
+            path: ca.crt
+          name: kube-root-ca.crt
+      - downwardAPI:
+          items:
+          - fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+            path: namespace
+status:
+  conditions:
+  - lastProbeTime: null
+    lastTransitionTime: "2023-06-07T23:00:30Z"
+    status: "True"
+    type: Initialized
+  - lastProbeTime: null
+    lastTransitionTime: "2023-06-07T23:00:42Z"
+    status: "True"
+    type: Ready
+  - lastProbeTime: null
+    lastTransitionTime: "2023-06-07T23:00:42Z"
+    status: "True"
+    type: ContainersReady
+  - lastProbeTime: null
+    lastTransitionTime: "2023-06-07T23:00:30Z"
+    status: "True"
+    type: PodScheduled
+  containerStatuses:
+  - containerID: containerd://9ede17d94d7c69d57bb29937ae923ec3f9ad0e5fd88cae503ac446dca56170f1
+    image: ghcr.io/antreasantoniou/gate:latest
+    imageID: ghcr.io/antreasantoniou/gate@sha256:22099265b9eac52b7a9d8bc48c7178cf30a3bbc8e34bf7e4726cd87f80f72bce
+    lastState: {}
+    name: tali-node-2
+    ready: true
+    restartCount: 0
+    started: true
+    state:
+      running:
+        startedAt: "2023-06-07T23:00:42Z"
+  hostIP: 10.22.11.233
+  phase: Running
+  podIP: 10.42.46.240
+  podIPs:
+  - ip: 10.42.46.240
+  qosClass: BestEffort
+  startTime: "2023-06-07T23:00:30Z"

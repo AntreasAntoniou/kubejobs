@@ -130,9 +130,9 @@ random.shuffle(experiment_dict)
 # Create a new dictionary from the shuffled list
 experiment_dict = dict(experiment_dict)
 
-experiment_dict = {
-    key: value for key, value in experiment_dict.items() if "winogr" not in key
-}
+# experiment_dict = {
+#     key: value for key, value in experiment_dict.items() if "winogr" not in key
+# }
 
 for name, command in experiment_dict.items():
     print(f"Command for {name}: {command}")
@@ -152,7 +152,7 @@ for idx, (name, command) in tqdm(enumerate(experiment_dict.items())):
     pvc_dict: PVCStatus = get_pvc_status()
     while len(pvc_dict.available) == 0:
         pvc_dict: PVCStatus = get_pvc_status()
-        time.sleep(10)
+        time.sleep(2)
 
     # Select the PVC that has been used the least number of times
     pvc_name = min(pvc_dict.available, key=lambda pvc: pvc_usage[pvc])

@@ -8,21 +8,10 @@ def build_command(
         f"/opt/conda/envs/main/bin/accelerate-launch --mixed_precision=bf16 --gpu_ids=0 /app/gate/run.py "
         f"exp_name={exp_name} model={model_name} {model_args} dataset={dataset_name} optimizer.lr={lr} "
         f"trainer=image_to_text_zero_shot_classification evaluator=image_to_text_zero_shot_classification "
-        f"seed={seed} train_batch_size=128 eval_batch_size=128"
+        f"seed={seed} train_batch_size=64 eval_batch_size=64"
     )
     return command_template
 
-
-# accelerate launch --mixed_precision=bf16 gate/run.py exp_name=zs-clip-debug model=clip-zero-shot-classification dataset=winoground trainer=image_to_te
-# xt_zero_shot_classification evaluator=image_to_text_zero_shot_classification seed=2306 train_batch_size=64 eval_batch_size=64 learner.limit_val_iters=1
-
-
-# dataset_dict = {
-#     "flickr30k": "flickr30k",
-#     "newyorkercaptioncontest": "nycc",
-#     "pokemonblipcaptions": "pokeset",
-#     "winoground": "winogr",
-# }
 
 dataset_dict = {
     "winogr": "winoground",
@@ -31,15 +20,6 @@ dataset_dict = {
     "pokeset": "pokemonblipcaptions",
 }
 
-tali_model_names = [
-    "Antreas/witp-godzilla-base16-wit-42",
-    "Antreas/talip-godzilla-base16-witav-42",
-    "Antreas/wits-godzilla-base16-wit-42",
-    "Antreas/talip-godzilla-base16-wita-42",
-    "Antreas/talis-godzilla-base16-wita-42",
-    "Antreas/talis-godzilla-base16-wit-42",
-    "Antreas/talis-godzilla-base16-witav-1337",
-]
 
 timm_model_names = [
     "vit_base_patch16_clip_224.laion2b",
@@ -66,14 +46,14 @@ lr_dict = {
     "efficientnetv2_rw_s_ra2_in1k": 1e-5,
     "deit3_base_patch16_224_fb_in1k": 1e-5,
     "flexivit_base_1200ep_in1k": 1e-5,
-    "witp-base16-wit": 1e-5,
-    "talip-base16-wit": 1e-5,
-    "talip-base16-wita": 1e-5,
-    "talip-base16-witav": 1e-5,
-    "wits-base16-wit": 1e-5,
-    "talis-base16-wit": 1e-5,
-    "talis-base16-wita": 1e-5,
-    "talis-base16-witav": 1e-5,
+    "witp-base16-wit-0": 1e-5,
+    "talip-base16-wita-0": 1e-5,
+    "talip-base16-wiva-0": 1e-5,
+    "talip-base16-witav-0": 1e-5,
+    "wits-base16-wit-0": 1e-5,
+    "talis-base16-wit-0": 1e-5,
+    "talis-base16-wita-0": 1e-5,
+    "talis-base16-witav-0": 1e-5,
 }
 
 model_dict = {
@@ -118,35 +98,50 @@ model_dict = {
         model_name="timm-zero-shot-classification",
         timm_model_name="flexivit_base.1200ep_in1k",
     ),
-    # "wits-gbase16-wit": dict(
-    #     model_name="tali-classification",
-    #     model_repo_path="Antreas/wits-godzilla-base16-wit-42",
-    # ),
-    # "witp-gbase16-wit": dict(
-    #     model_name="tali-classification",
-    #     model_repo_path="Antreas/witp-godzilla-base16-wit-42",
-    # ),
-    # "talis-base16-wit": dict(
-    #     model_name="tali-classification",
-    #     model_repo_path="Antreas/talis-godzilla-base16-wit-42",
-    # ),
-    # "talis-gbase16-wita": dict(
-    #     model_name="tali-classification",
-    #     model_repo_path="Antreas/talis-godzilla-base16-wita-42",
-    # ),
-    # "talip-gbase16-wita": dict(
-    #     model_name="tali-classification",
-    #     model_repo_path="Antreas/talip-godzilla-base16-wita-42",
-    # ),
-    # "talis-base16-witav": dict(
-    #     model_name="tali-classification",
-    #     model_repo_path="Antreas/talis-godzilla-base16-witav-1337",
-    # ),
-    # "talip-gbase16-witav": dict(
-    #     model_name="tali-classification",
-    #     model_repo_path="Antreas/talip-godzilla-base16-witav-42",
-    # ),
 }
+
+tali_model_dict = {
+    "wits-base16-wit-0": dict(
+        model_name="tali-zero-shot-classification",
+        model_repo_path="Antreas/wits-godzilla-base16-wit-1337-7",
+    ),
+    "witp-base16-wit-0": dict(
+        model_name="tali-zero-shot-classification",
+        model_repo_path="Antreas/witp-godzilla-base16-wit-1337-7",
+    ),
+    "talis-base16-wita-0": dict(
+        model_name="tali-zero-shot-classification",
+        model_repo_path="Antreas/talis-godzilla-base16-wita-1337-7",
+    ),
+    "talip-base16-wita-0": dict(
+        model_name="tali-zero-shot-classification",
+        model_repo_path="Antreas/talip-godzilla-base16-wita-1337-7",
+    ),
+    "talip-base16-wiva-0": dict(
+        model_name="tali-zero-shot-classification",
+        model_repo_path="Antreas/talip-godzilla-base16-wiva-sep-1337",
+    ),
+    "talis-base16-witav-0": dict(
+        model_name="tali-zero-shot-classification",
+        model_repo_path="Antreas/talis-godzilla-base16-witav-1337-7",
+    ),
+    "talip-base16-witav-0": dict(
+        model_name="tali-zero-shot-classification",
+        model_repo_path="Antreas/talip-godzilla-base16-witav-1337-7",
+    ),
+}
+
+model_dict = model_dict | tali_model_dict
+
+tali_model_names = [
+    "Antreas/wits-godzilla-base16-wit-1337-7",
+    "Antreas/witp-godzilla-base16-wit-1337-7",
+    "Antreas/talip-godzilla-base16-wita-1337-7",
+    "Antreas/talis-godzilla-base16-wita-1337-7",
+    "Antreas/talip-godzilla-base16-wiva-sep-1337",
+    "Antreas/talip-godzilla-base16-witav-1337-7",
+    "Antreas/talis-godzilla-base16-witav-1337-7",
+]
 
 
 def generate_commands(prefix, seed_list, dataset_dict, model_dict, lr_dict):
@@ -178,7 +173,7 @@ def generate_commands(prefix, seed_list, dataset_dict, model_dict, lr_dict):
 
 def get_commands(prefix):
     # Generate a list of random seeds
-    seed_list = [1337]  # , 2306, 42]  # , 42, 1337, 2306
+    seed_list = [1337, 2306, 42]
 
     # Generate all commands
     command_dict = generate_commands(

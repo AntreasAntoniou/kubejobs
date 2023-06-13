@@ -8,7 +8,7 @@ def build_command(
         f"/opt/conda/envs/main/bin/accelerate-launch --mixed_precision=bf16 --gpu_ids=0 /app/gate/run.py "
         f"exp_name={exp_name} model={model_name} {model_args} dataset={dataset_name} optimizer.lr={lr} "
         f"trainer=visual_relational_reasoning evaluator=visual_relational_reasoning "
-        f"seed={seed} train_batch_size=128 eval_batch_size=128"
+        f"seed={seed} train_batch_size=64 eval_batch_size=64"
     )
     return command_template
 
@@ -56,14 +56,14 @@ lr_dict = {
     "efficientnetv2_rw_s_ra2_in1k": 1e-5,
     "deit3_base_patch16_224_fb_in1k": 1e-5,
     "flexivit_base_1200ep_in1k": 1e-5,
-    "witp-base16-wit": 1e-5,
-    "talip-base16-wit": 1e-5,
-    "talip-base16-wita": 1e-5,
-    "talip-base16-witav": 1e-5,
-    "wits-base16-wit": 1e-5,
-    "talis-base16-wit": 1e-5,
-    "talis-base16-wita": 1e-5,
-    "talis-base16-witav": 1e-5,
+    "witp-base16-wit-0": 1e-5,
+    "talip-base16-wita-0": 1e-5,
+    "talip-base16-wiva-0": 1e-5,
+    "talip-base16-witav-0": 1e-5,
+    "wits-base16-wit-0": 1e-5,
+    "talis-base16-wit-0": 1e-5,
+    "talis-base16-wita-0": 1e-5,
+    "talis-base16-witav-0": 1e-5,
 }
 
 model_dict = {
@@ -157,6 +157,46 @@ model_dict = {
     #     model_repo_path="Antreas/talip-godzilla-base16-witav-42",
     # ),
 }
+
+tali_model_dict = {
+    "wits-base16-wit-0": dict(
+        clvr="tali-relational-reasoning-multi-task",
+        clvrmath="tali-relational-reasoning",
+        model_repo_path="Antreas/wits-godzilla-base16-wit-1337-7",
+    ),
+    "witp-base16-wit-0": dict(
+        clvr="tali-relational-reasoning-multi-task",
+        clvrmath="tali-relational-reasoning",
+        model_repo_path="Antreas/witp-godzilla-base16-wit-1337-7",
+    ),
+    "talis-base16-wita-0": dict(
+        clvr="tali-relational-reasoning-multi-task",
+        clvrmath="tali-relational-reasoning",
+        model_repo_path="Antreas/talis-godzilla-base16-wita-1337-7",
+    ),
+    "talip-base16-wita-0": dict(
+        clvr="tali-relational-reasoning-multi-task",
+        clvrmath="tali-relational-reasoning",
+        model_repo_path="Antreas/talip-godzilla-base16-wita-1337-7",
+    ),
+    "talip-base16-wiva-0": dict(
+        clvr="tali-relational-reasoning-multi-task",
+        clvrmath="tali-relational-reasoning",
+        model_repo_path="Antreas/talip-godzilla-base16-wiva-sep-1337",
+    ),
+    "talis-base16-witav-0": dict(
+        clvr="tali-relational-reasoning-multi-task",
+        clvrmath="tali-relational-reasoning",
+        model_repo_path="Antreas/talis-godzilla-base16-witav-1337-7",
+    ),
+    "talip-base16-witav-0": dict(
+        clvr="tali-relational-reasoning-multi-task",
+        clvrmath="tali-relational-reasoning",
+        model_repo_path="Antreas/talip-godzilla-base16-witav-1337-7",
+    ),
+}
+
+model_dict = model_dict | tali_model_dict
 
 
 def generate_commands(prefix, seed_list, dataset_dict, model_dict, lr_dict):

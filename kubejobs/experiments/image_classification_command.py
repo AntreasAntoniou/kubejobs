@@ -48,14 +48,13 @@ lr_dict = {
     "efficientnetv2_rw_s_ra2_in1k": 1e-5,
     "deit3_base_patch16_224_fb_in1k": 1e-5,
     "flexivit_base_1200ep_in1k": 1e-5,
-    "witp-base16-wit": 1e-5,
-    "talip-base16-wit": 1e-5,
-    "talip-base16-wita": 1e-5,
-    "talip-base16-witav": 1e-5,
-    "wits-base16-wit": 1e-5,
-    "talis-base16-wit": 1e-5,
-    "talis-base16-wita": 1e-5,
-    "talis-base16-witav": 1e-5,
+    "witp-base16-wit-0": 1e-5,
+    "talip-base16-wita-0": 1e-5,
+    "talip-base16-wiva-0": 1e-5,
+    "talip-base16-witav-0": 1e-5,
+    "wits-base16-wit-0": 1e-5,
+    "talis-base16-wita-0": 1e-5,
+    "talis-base16-witav-0": 1e-5,
 }
 
 model_dict = {
@@ -100,45 +99,40 @@ model_dict = {
         model_name="timm-classification",
         timm_model_name="flexivit_base.1200ep_in1k",
     ),
-    # "wits-gbase16-wit": dict(
-    #     model_name="tali-classification",
-    #     model_repo_path="Antreas/wits-godzilla-base16-wit-42",
-    # ),
-    # "witp-gbase16-wit": dict(
-    #     model_name="tali-classification",
-    #     model_repo_path="Antreas/witp-godzilla-base16-wit-42",
-    # ),
-    # "talis-base16-wit": dict(
-    #     model_name="tali-classification",
-    #     model_repo_path="Antreas/talis-godzilla-base16-wit-42",
-    # ),
-    # "talis-gbase16-wita": dict(
-    #     model_name="tali-classification",
-    #     model_repo_path="Antreas/talis-godzilla-base16-wita-42",
-    # ),
-    # "talip-gbase16-wita": dict(
-    #     model_name="tali-classification",
-    #     model_repo_path="Antreas/talip-godzilla-base16-wita-42",
-    # ),
-    # "talis-base16-witav": dict(
-    #     model_name="tali-classification",
-    #     model_repo_path="Antreas/talis-godzilla-base16-witav-1337",
-    # ),
-    # "talip-gbase16-witav": dict(
-    #     model_name="tali-classification",
-    #     model_repo_path="Antreas/talip-godzilla-base16-witav-42",
-    # ),
 }
 
-tali_model_names = [
-    "Antreas/wits-godzilla-base16-wit-42",
-    "Antreas/witp-godzilla-base16-wit-42",
-    "Antreas/talis-godzilla-base16-wit-42",
-    "Antreas/talis-godzilla-base16-wita-42",
-    "Antreas/talip-godzilla-base16-wita-42",
-    "Antreas/talis-godzilla-base16-witav-1337",
-    "Antreas/talip-godzilla-base16-witav-42",
-]
+tali_model_dict = {
+    "wits-base16-wit-0": dict(
+        model_name="tali-classification",
+        model_repo_path="Antreas/wits-godzilla-base16-wit-1337-7",
+    ),
+    "witp-base16-wit-0": dict(
+        model_name="tali-classification",
+        model_repo_path="Antreas/witp-godzilla-base16-wit-1337-7",
+    ),
+    "talis-base16-wita-0": dict(
+        model_name="tali-classification",
+        model_repo_path="Antreas/talis-godzilla-base16-wita-1337-7",
+    ),
+    "talip-base16-wita-0": dict(
+        model_name="tali-classification",
+        model_repo_path="Antreas/talip-godzilla-base16-wita-1337-7",
+    ),
+    "talip-base16-wiva-0": dict(
+        model_name="tali-classification",
+        model_repo_path="Antreas/talip-godzilla-base16-wiva-sep-1337",
+    ),
+    "talis-base16-witav-0": dict(
+        model_name="tali-classification",
+        model_repo_path="Antreas/talis-godzilla-base16-witav-1337-7",
+    ),
+    "talip-base16-witav-0": dict(
+        model_name="tali-classification",
+        model_repo_path="Antreas/talip-godzilla-base16-witav-1337-7",
+    ),
+}
+
+model_dict = model_dict | tali_model_dict
 
 
 def generate_commands(prefix, seed_list, dataset_dict, model_dict, lr_dict):

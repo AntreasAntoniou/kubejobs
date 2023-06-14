@@ -8,7 +8,7 @@ def build_command(
         f"/opt/conda/envs/main/bin/accelerate-launch --mixed_precision=bf16 --gpu_ids=0 /app/gate/run.py "
         f"exp_name={exp_name} model={model_name} {model_args} dataset={dataset_name} optimizer.lr={lr} "
         f"trainer=visual_relational_reasoning evaluator=visual_relational_reasoning "
-        f"seed={seed} train_batch_size=64 eval_batch_size=64"
+        f"seed={seed} train_batch_size=64 eval_batch_size=16"
     )
     return command_template
 
@@ -196,7 +196,7 @@ tali_model_dict = {
     ),
 }
 
-model_dict = model_dict | tali_model_dict
+model_dict = tali_model_dict
 
 
 def generate_commands(prefix, seed_list, dataset_dict, model_dict, lr_dict):

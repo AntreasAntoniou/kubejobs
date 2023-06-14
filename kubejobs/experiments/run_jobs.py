@@ -147,8 +147,9 @@ print(
 #         pvc_name=pvc_name, storage="2Ti", access_modes="ReadWriteOnce"
 #     )
 job_succesfully_launched = False
-
-for idx, (name, command) in tqdm(enumerate(experiment_dict.items())):
+idx = 0
+experiment_list = list(experiment_dict.items())
+while idx < len(experiment_dict.items()):
     pvc_dict: PVCStatus = get_pvc_status()
     while len(pvc_dict.available) == 0:
         pvc_dict: PVCStatus = get_pvc_status()
@@ -162,35 +163,41 @@ for idx, (name, command) in tqdm(enumerate(experiment_dict.items())):
     # Increment the usage count for the selected PVC
     pvc_usage[pvc_name] += 1
     gpu_type = None
-    while gpu_type is None and job_succesfully_launched:
+    while gpu_type is None:
         gpu_type = get_gpu_type_to_use()
         job_succesfully_launched = False
 
-    job = KubernetesJob(
-        name=f"{name}",
-        image="ghcr.io/antreasantoniou/gate:latest",
-        command=["/bin/bash", "-c", "--"],
-        args=[f"{command}"],
-        gpu_type="nvidia.com/gpu",
-        gpu_product=gpu_type,
-        shm_size="100G",  # this is key for pytorch dataloaders and other operations that need access to shared memory (RAM) under the /dev/shm directory
-        gpu_limit=1,
-        backoff_limit=4,
-        volume_mounts={
-            "gate-disk": {
-                "pvc": pvc_name,
-                "mountPath": "/data/",
-            },
-        },
-        env_vars=env_vars,
-    )
+    while not job_succesfully_launched:
+        name, command = experiment_list[idx]
 
-    job_yaml = job.generate_yaml()
-    print(f"Attemping to launch job {name}")
-    try:
-        result = job.run()
-        job_succesfully_launched = result == 0
-    except Exception as e:
-        logger.info(f"Job {name} failed with error: {e}")
+        job = KubernetesJob(
+            name=f"{name}",
+            image="ghcr.io/antreasantoniou/gate:latest",
+            command=["/bin/bash", "-c", "--"],
+            args=[f"{command}"],
+            gpu_type="nvidia.com/gpu",
+            gpu_product=gpu_type,
+            shm_size="100G",  # this is key for pytorch dataloaders and other operations that need access to shared memory (RAM) under the /dev/shm directory
+            gpu_limit=1,
+            backoff_limit=4,
+            volume_mounts={
+                "gate-disk": {
+                    "pvc": pvc_name,
+                    "mountPath": "/data/",
+                },
+            },
+            env_vars=env_vars,
+        )
+
+        job_yaml = job.generate_yaml()
+        print(
+            f"Attemping to launch job {name} on {gpu_type} with PVC {pvc_name}"
+        )
+        try:
+            result = job.run()
+            job_succesfully_launched = result.returncode == 0
+        except Exception as e:
+            logger.info(f"Job {name} failed with error: {e}")
+        idx += 1
 
     time.sleep(2)

@@ -137,7 +137,7 @@ tali_model_dict = {
     ),
 }
 
-model_dict = model_dict | tali_model_dict
+model_dict = tali_model_dict
 
 
 def generate_commands(prefix, seed_list, dataset_dict, model_dict, lr_dict):

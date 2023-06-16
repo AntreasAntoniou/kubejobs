@@ -8,7 +8,7 @@ def build_command(
         f"/opt/conda/envs/main/bin/accelerate-launch --mixed_precision=bf16 --gpu_ids=0 /app/gate/run.py "
         f"exp_name={exp_name} model={model_name} {model_args} dataset={dataset_name} optimizer.lr={lr} "
         f"trainer=image_to_text_zero_shot_classification evaluator=image_to_text_zero_shot_classification "
-        f"seed={seed} train_batch_size=32 eval_batch_size=16"
+        f"seed={seed} train_batch_size=128 eval_batch_size=128"
     )
     return command_template
 
@@ -131,7 +131,7 @@ tali_model_dict = {
     ),
 }
 
-model_dict = tali_model_dict
+model_dict = tali_model_dict | model_dict
 
 tali_model_names = [
     "Antreas/wits-godzilla-base16-wit-1337-7",
@@ -173,7 +173,7 @@ def generate_commands(prefix, seed_list, dataset_dict, model_dict, lr_dict):
 
 def get_commands(prefix):
     # Generate a list of random seeds
-    seed_list = [1337]
+    seed_list = [7]
 
     # Generate all commands
     command_dict = generate_commands(

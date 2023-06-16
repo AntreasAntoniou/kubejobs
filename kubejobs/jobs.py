@@ -65,6 +65,7 @@ class KubernetesJob:
         secret_env_vars: Optional[dict] = None,
         env_vars: Optional[dict] = None,
         volume_mounts: Optional[dict] = None,
+        job_deadlineseconds: Optional[int] = None,
     ):
         self.name = name
         self.image = image
@@ -82,6 +83,7 @@ class KubernetesJob:
         self.secret_env_vars = secret_env_vars
         self.env_vars = env_vars
         self.volume_mounts = volume_mounts
+        self.job_deadlineseconds = job_deadlineseconds
 
     def _add_shm_size(self, container: dict):
         """Adds shared memory volume if shm_size is set."""
@@ -200,6 +202,10 @@ class KubernetesJob:
                 "backoffLimit": self.backoff_limit,
             },
         }
+
+        if self.job_deadlineseconds:
+            job["spec"]["activeDeadlineSeconds"] = self.job_deadlineseconds
+
         if not (
             self.gpu_type is None
             or self.gpu_limit is None

@@ -170,6 +170,9 @@ while idx < len(experiment_dict.items()):
     while not job_succesfully_launched:
         name, command = experiment_list[idx]
 
+        if "fs" in name:
+            gpu_type = "NVIDIA-A100-SXM4-80GB"
+
         job = KubernetesJob(
             name=f"{name}",
             image="ghcr.io/antreasantoniou/gate:latest",
@@ -187,6 +190,7 @@ while idx < len(experiment_dict.items()):
                 },
             },
             env_vars=env_vars,
+            job_deadlineseconds=3600 * 2 * 1,
         )
 
         job_yaml = job.generate_yaml()

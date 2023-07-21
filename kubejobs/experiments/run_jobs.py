@@ -175,7 +175,7 @@ while idx < len(experiment_dict.items()):
 
         job = KubernetesJob(
             name=f"{name}",
-            image="ghcr.io/antreasantoniou/gate:latest",
+            image="ghcr.io/antreasantoniou/gate:0.8.8",
             command=["/bin/bash", "-c", "--"],
             args=[f"{command}"],
             gpu_type="nvidia.com/gpu",

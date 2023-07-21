@@ -1,0 +1,14 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ubuntu-ssh-job
+spec:
+  template:
+    spec:
+      containers:
+      - name: ubuntu-ssh-container
+        image: ubuntu:latest
+        command: ["bash", "-c", "apt-get update && apt-get install -y openssh-server && echo 'root:password' | chpasswd && /usr/sbin/sshd -D"]
+        ports:
+        - containerPort: 22
+      restartPolicy: Never

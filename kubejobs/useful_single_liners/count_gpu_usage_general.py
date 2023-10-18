@@ -7,6 +7,17 @@ from rich.console import Console
 from rich.table import Table
 from tqdm.auto import tqdm
 
+# NVIDIA-A100-SXM4-80GB – a full non-MIG 80GB GPU
+# NVIDIA-A100-SXM4-40GB – a full non-MIG 40GB GPU
+# NVIDIA-A100-SXM4-40GB-MIG-3g.20gb – just under half-GPU
+# NVIDIA-A100-SXM4-40GB-MIG-1g.5gb – a seventh of a GPU
+
+# 32 Nvidia A100 80 GB GPUs
+# 70 Nvidia A100 40 GB GPUs
+# 28 Nvidia A100 3G.20GB GPUs
+# 140 A100 1G.5GB GPUs
+
+GPU_DETAIL_DICT = {"NVIDIA-A100-SXM4-80GB": 32, "NVIDIA-A100-SXM4-40GB": 88, "NVIDIA-A100-SXM4-40GB-MIG-3g.20gb": 28, "NVIDIA-A100-SXM4-40GB-MIG-1g.5gb": 140}
 
 def run_subprocess(command):
     result = subprocess.run(command, capture_output=True, text=True)
@@ -55,16 +66,19 @@ def extract_gpu_info(pod_description):
 
 def count_gpu_usage():
     pods = get_pods()
-    gpu_usage = {"active": {}, "inactive": {}}
+    gpu_usage = {"active": {}, "requested-and-pending": {}, "available": {}}
     for pod, status in tqdm(pods):
         pod_description = "\n".join(describe_pod(pod))
         gpu_model, gpu_count = extract_gpu_info(pod_description)
         if gpu_model and gpu_count:
-            status = "active" if "Running" in status else "inactive"
+            status = "in-use" if ("Running" in status or "ContainerCreating" in status) else "requested-and-pending"
+            
             if gpu_model in gpu_usage[status]:
                 gpu_usage[status][gpu_model] += gpu_count
             else:
                 gpu_usage[status][gpu_model] = gpu_count
+    gpu_usage["available"] = {k: v - gpu_usage["active"][k] if k in gpu_usage["active"] else v for k, v in GPU_DETAIL_DICT.items()}
+    
     return gpu_usage
 
 

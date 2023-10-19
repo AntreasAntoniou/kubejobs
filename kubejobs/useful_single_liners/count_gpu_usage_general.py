@@ -17,7 +17,13 @@ from tqdm.auto import tqdm
 # 28 Nvidia A100 3G.20GB GPUs
 # 140 A100 1G.5GB GPUs
 
-GPU_DETAIL_DICT = {"NVIDIA-A100-SXM4-80GB": 32, "NVIDIA-A100-SXM4-40GB": 88, "NVIDIA-A100-SXM4-40GB-MIG-3g.20gb": 28, "NVIDIA-A100-SXM4-40GB-MIG-1g.5gb": 140}
+GPU_DETAIL_DICT = {
+    "NVIDIA-A100-SXM4-80GB": 32,
+    "NVIDIA-A100-SXM4-40GB": 88,
+    "NVIDIA-A100-SXM4-40GB-MIG-3g.20gb": 28,
+    "NVIDIA-A100-SXM4-40GB-MIG-1g.5gb": 140,
+}
+
 
 def run_subprocess(command):
     result = subprocess.run(command, capture_output=True, text=True)
@@ -71,14 +77,21 @@ def count_gpu_usage():
         pod_description = "\n".join(describe_pod(pod))
         gpu_model, gpu_count = extract_gpu_info(pod_description)
         if gpu_model and gpu_count:
-            status = "in-use" if ("Running" in status or "ContainerCreating" in status) else "requested-and-pending"
-            
+            status = (
+                "in-use"
+                if ("Running" in status or "ContainerCreating" in status)
+                else "requested-and-pending"
+            )
+
             if gpu_model in gpu_usage[status]:
                 gpu_usage[status][gpu_model] += gpu_count
             else:
                 gpu_usage[status][gpu_model] = gpu_count
-    gpu_usage["available"] = {k: v - gpu_usage["active"][k] if k in gpu_usage["active"] else v for k, v in GPU_DETAIL_DICT.items()}
-    
+    gpu_usage["available"] = {
+        k: v - gpu_usage["active"][k] if k in gpu_usage["active"] else v
+        for k, v in GPU_DETAIL_DICT.items()
+    }
+
     return gpu_usage
 
 

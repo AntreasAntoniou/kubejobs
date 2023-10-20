@@ -170,9 +170,11 @@ class KubernetesJob:
 
         if self.cpu_request is not None:
             container["resources"]["requests"]["cpu"] = self.cpu_request
+            container["resources"]["limits"]["cpu"] = self.cpu_request
 
         if self.ram_request is not None:
             container["resources"]["requests"]["memory"] = self.ram_request
+            container["resources"]["limits"]["memory"] = self.ram_request
 
         if self.storage_request is not None:
             container["resources"]["requests"][

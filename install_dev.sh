@@ -5,8 +5,8 @@ conda init bash
 conda init fish
 source ~/.bashrc
 
-conda create -n main python=3.10 -y
-conda activate main
+conda create -n kubejobs python=3.10 -y
+conda activate kubejobs
 conda install -c conda-forge mamba -y
 
 mamba install -c conda-forge git gh -y

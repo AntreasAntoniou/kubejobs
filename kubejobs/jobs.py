@@ -82,7 +82,7 @@ class KubernetesJob:
             gpu_limit is not None
         ), f"gpu_limit must be set to a value between 1 and {MAX_GPU}, not {gpu_limit}"
         assert (
-            gpu_type > 0
+            gpu_limit > 0
         ), f"gpu_limit must be set to a value between 1 and {MAX_GPU}, not {gpu_limit}"
         self.gpu_limit = gpu_limit
         self.backoff_limit = backoff_limit

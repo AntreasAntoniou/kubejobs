@@ -29,8 +29,8 @@ job = KubernetesJob(
     gpu_limit=1,
     shm_size="100G",  # "200G" is the maximum value for shm_size
     backoff_limit=4,
-    cpu_request=192,
-    ram_request="890G",
+    cpu_request=192 // 8,
+    ram_request=f"{890 // 8}G",
     env_vars=env_vars,
     # volume_mounts={
     #     "dataset-disk": {

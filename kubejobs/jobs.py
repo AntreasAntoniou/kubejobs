@@ -309,6 +309,9 @@ class KubernetesJob:
                 stderr=subprocess.PIPE,
                 text=True,
             )
+            # Remove the temporary file
+            os.remove("temp_job.yaml")
+            return result.returncode
         except Exception as e:
             logger.info(
                 f"Command failed with return code {e}, stderr: {e.stderr}"
@@ -316,10 +319,6 @@ class KubernetesJob:
             # Remove the temporary file
             os.remove("temp_job.yaml")
             return result
-
-        # Remove the temporary file
-        os.remove("temp_job.yaml")
-        return result
 
     @classmethod
     def from_command_line(cls):

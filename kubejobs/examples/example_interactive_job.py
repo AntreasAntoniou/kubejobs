@@ -3,6 +3,7 @@ import time
 
 from kubejobs.jobs import KubernetesJob
 
+<<<<<<< HEAD
 env_vars = {
     "NEPTUNE_API_TOKEN": "eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLm5lcHR1bmUuYWkiLCJhcGlfdXJsIjoiaHR0cHM6Ly9hcHAubmVwdHVuZS5haSIsImFwaV9rZXkiOiJkOTFjMTY5Zi03ZGUwLTQ4ODYtYWI0Zi1kZDEzNjlkMGI5ZjQifQ==",
     "NEPTUNE_PROJECT": "MachineLearningBrewery/gate-exp-0-8-6",
@@ -28,6 +29,10 @@ env_vars = {
     "DATASET_DIR": "/data/",
     "MODEL_DIR": "/data/model/",
 }
+=======
+
+env_vars = {}
+>>>>>>> 38efc841ec3bc60ac886c8d0fa2455937c2dc8fd
 
 # unique id generated using time
 

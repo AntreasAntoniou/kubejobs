@@ -1,15 +1,30 @@
-import subprocess
 import re
-import yaml
+import subprocess
+from collections import defaultdict
+from typing import OrderedDict
 
+import yaml
 from rich import print
 from rich.console import Console
 from rich.table import Table
-import re
-
 from tqdm.auto import tqdm
 
-import subprocess
+# NVIDIA-A100-SXM4-80GB – a full non-MIG 80GB GPU
+# NVIDIA-A100-SXM4-40GB – a full non-MIG 40GB GPU
+# NVIDIA-A100-SXM4-40GB-MIG-3g.20gb – just under half-GPU
+# NVIDIA-A100-SXM4-40GB-MIG-1g.5gb – a seventh of a GPU
+
+# 32 Nvidia A100 80 GB GPUs
+# 70 Nvidia A100 40 GB GPUs
+# 28 Nvidia A100 3G.20GB GPUs
+# 140 A100 1G.5GB GPUs
+
+GPU_DETAIL_DICT = {
+    "NVIDIA-A100-SXM4-80GB": 32,
+    "NVIDIA-A100-SXM4-40GB": 88,
+    "NVIDIA-A100-SXM4-40GB-MIG-3g.20gb": 28,
+    "NVIDIA-A100-SXM4-40GB-MIG-1g.5gb": 140,
+}
 
 
 def run_subprocess(command):
@@ -59,19 +74,53 @@ def extract_gpu_info(pod_description):
 
 def count_gpu_usage():
     pods = get_pods()
-    gpu_usage = {"active": {}, "inactive": {}}
+    gpu_usage = {"Available": OrderedDict()}
     for pod, status in tqdm(pods):
         pod_description = "\n".join(describe_pod(pod))
         gpu_model, gpu_count = extract_gpu_info(pod_description)
         if gpu_model and gpu_count:
-            status = "active" if "Running" in status else "inactive"
+            if status not in gpu_usage:
+                gpu_usage[status] = OrderedDict()
             if gpu_model in gpu_usage[status]:
                 gpu_usage[status][gpu_model] += gpu_count
             else:
                 gpu_usage[status][gpu_model] = gpu_count
+
+    gpu_usage["Available"] = {
+        k: v - gpu_usage["Running"][k] if k in gpu_usage["Running"] else v
+        for k, v in GPU_DETAIL_DICT.items()
+    }
+
     return gpu_usage
 
 
 if __name__ == "__main__":
     gpu_usage = count_gpu_usage()
-    print(gpu_usage)
+
+    # Create a table with dynamic columns based on the GPU models
+    table = Table(title="GPU Usage")
+    table.add_column("Status", justify="left", style="cyan")
+
+    # Dynamically add columns for each GPU model
+    for gpu_model in GPU_DETAIL_DICT.keys():
+        table.add_column(gpu_model, justify="right", style="magenta")
+
+    console = Console()
+
+    # Create a defaultdict to ensure that if a GPU model is not present, it defaults to 0
+    full_gpu_usage = defaultdict(lambda: defaultdict(int))
+
+    for status, gpu_dict in gpu_usage.items():
+        for gpu_model, count in gpu_dict.items():
+            full_gpu_usage[status][gpu_model] = count
+
+    # Populate the table
+    for status, gpu_dict in full_gpu_usage.items():
+        row = [status]
+        for gpu_model in GPU_DETAIL_DICT.keys():
+            row.append(
+                str(gpu_dict.get(gpu_model, 0))
+            )  # Use 0 if the GPU model is not found
+        table.add_row(*row)
+
+    console.print(table)

@@ -1,6 +1,7 @@
-import subprocess
-from rich import print
 import re
+import subprocess
+
+from rich import print
 
 # Get all PVCs
 get_pvcs = subprocess.run(

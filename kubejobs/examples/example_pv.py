@@ -1,4 +1,4 @@
-from kubejobs import create_pv
+from kubejobs.jobs import create_pv
 
 if __name__ == "__main__":
     pv_name = "datasets-pv"

@@ -1,10 +1,16 @@
 # Example usage:
 import time
 
-from kubejobs import KubernetesJob, create_jobs_for_experiments, create_pvc
+from kubejobs.jobs import (
+    KubernetesJob,
+    create_jobs_for_experiments,
+    create_pvc,
+)
 
-
-env_vars = {}
+env_vars = {
+    "DATASET_DIR": "/data/",
+    "MODEL_DIR": "/data/model/",
+}
 
 # unique id generated using time
 

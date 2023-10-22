@@ -1,7 +1,8 @@
-import subprocess
-import yaml
 import json
 import re
+import subprocess
+
+import yaml
 
 
 def get_gpu_usage():

@@ -1,7 +1,7 @@
 from rich import print
 
-from kubejobs import KubernetesJob as Job
-from kubejobs import create_pvc
+from kubejobs.jobs import KubernetesJob as Job
+from kubejobs.jobs import create_pvc
 
 # Create PVC if not created
 pvc_name = "datasets-pvc-0"

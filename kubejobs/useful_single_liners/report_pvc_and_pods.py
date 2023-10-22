@@ -1,8 +1,9 @@
-import subprocess
 import json
-from tqdm.auto import tqdm
+import subprocess
+
 from rich.console import Console
 from rich.table import Table
+from tqdm.auto import tqdm
 
 
 # Function to execute a shell command and return the output

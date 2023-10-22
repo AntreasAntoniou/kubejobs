@@ -15,6 +15,10 @@ handler = RichHandler(markup=True)
 handler.setFormatter(logging.Formatter("%(message)s"))
 logger.addHandler(handler)
 
+MAX_CPU = 192
+MAX_RAM = 890
+MAX_GPU = 8
+
 
 class KubernetesJob:
     """
@@ -25,8 +29,8 @@ class KubernetesJob:
         image (str): Container image to use for the job.
         command (List[str], optional): Command to execute in the container. Defaults to None.
         args (List[str], optional): Arguments for the command. Defaults to None.
-        cpu_request (str, optional): Amount of CPU to request. For example, "500m" for half a CPU. Defaults to None.
-        ram_request (str, optional): Amount of RAM to request. For example, "1Gi" for 1 gibibyte. Defaults to None.
+        cpu_request (str, optional): Amount of CPU to request. For example, "500m" for half a CPU. Defaults to None. Max is 192 CPUs
+        ram_request (str, optional): Amount of RAM to request. For example, "1Gi" for 1 gibibyte. Defaults to None. Max is 890 GB
         storage_request (str, optional): Amount of storage to request. For example, "10Gi" for 10 gibibytes. Defaults to None.
         gpu_type (str, optional): Type of GPU resource, e.g. "nvidia.com/gpu". Defaults to None.
         gpu_product (str, optional): GPU product, e.g. "NVIDIA-A100-SXM4-80GB". Defaults to None.
@@ -69,11 +73,17 @@ class KubernetesJob:
         self.image = image
         self.command = command
         self.args = args
-        self.cpu_request = cpu_request
-        self.ram_request = ram_request
+        self.cpu_request = cpu_request if cpu_request else MAX_CPU // gpu_limit
+        self.ram_request = ram_request if ram_request else MAX_RAM // gpu_limit
         self.storage_request = storage_request
         self.gpu_type = gpu_type
         self.gpu_product = gpu_product
+        assert (
+            gpu_limit is not None
+        ), f"gpu_limit must be set to a value between 1 and {MAX_GPU}, not {gpu_limit}"
+        assert (
+            gpu_type > 0
+        ), f"gpu_limit must be set to a value between 1 and {MAX_GPU}, not {gpu_limit}"
         self.gpu_limit = gpu_limit
         self.backoff_limit = backoff_limit
         self.restart_policy = restart_policy

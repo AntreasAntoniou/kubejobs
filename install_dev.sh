@@ -11,6 +11,6 @@ conda install -c conda-forge mamba -y
 
 mamba install -c conda-forge git gh -y
 mamba install -c conda-forge git-lfs -y
-mamba install -c conda-forge micro bat starship fish tree -y
+mamba install -c conda-forge micro bat starship fish tree exa -y
 
 pip install -e .[dev]

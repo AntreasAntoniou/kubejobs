@@ -85,12 +85,12 @@ class KubernetesJob:
         self.cpu_request = (
             cpu_request
             if cpu_request
-            else MAX_CPU // (MAX_GPU - gpu_limit) + 1
+            else MAX_CPU // (MAX_GPU - gpu_limit + 1)
         )
         self.ram_request = (
             ram_request
             if ram_request
-            else MAX_RAM // (MAX_GPU - gpu_limit) + 1
+            else MAX_RAM // (MAX_GPU - gpu_limit + 1)
         )
         self.storage_request = storage_request
         self.gpu_type = gpu_type
@@ -107,7 +107,7 @@ class KubernetesJob:
         self.shm_size = (
             ram_request
             if ram_request
-            else MAX_RAM // (MAX_GPU - gpu_limit) + 1
+            else MAX_RAM // (MAX_GPU - gpu_limit + 1)
         )
         self.secret_env_vars = secret_env_vars
         self.env_vars = env_vars

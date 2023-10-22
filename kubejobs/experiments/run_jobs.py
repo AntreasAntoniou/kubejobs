@@ -1,11 +1,30 @@
 # Example usage:
-from collections import defaultdict
-import time
-from tqdm.auto import tqdm
+import logging
 import random
+import time
+from collections import defaultdict
+
 from rich import print
+from rich.logging import RichHandler
+from tqdm.auto import tqdm
 
 
+from kubejobs.experiments.few_shot_learning_command import (
+    get_commands as get_few_shot_learning_commands,
+)
+from kubejobs.experiments.image_classification_command import (
+    get_commands as get_image_classification_commands,
+)
+from kubejobs.experiments.medical_image_classification_command import (
+    get_commands as get_medical_image_classification_commands,
+)
+from kubejobs.experiments.pvc_status import PVCStatus, get_pvc_status
+from kubejobs.experiments.relational_reasoning_command import (
+    get_commands as get_relational_reasoning_commands,
+)
+from kubejobs.experiments.zero_shot_learning_command import (
+    get_commands as get_zero_shot_learning_commands,
+)
 from kubejobs.jobs import (
     KubernetesJob,
     create_jobs_for_experiments,
@@ -15,9 +34,15 @@ from kubejobs.useful_single_liners.count_gpu_usage_general import (
     count_gpu_usage,
 )
 
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+handler = RichHandler(markup=True)
+handler.setFormatter(logging.Formatter("%(message)s"))
+logger.addHandler(handler)
+
 gpu_type_to_max_count = {
     "NVIDIA-A100-SXM4-80GB": 32,
-    "NVIDIA-A100-SXM4-40GB": 70,
+    "NVIDIA-A100-SXM4-40GB": 88,
 }
 
 
@@ -38,50 +63,7 @@ def get_gpu_type_to_use():
     )
 
 
-from kubejobs.experiments.image_classification_command import (
-    get_commands as get_image_classification_commands,
-)
-from kubejobs.experiments.relational_reasoning_command import (
-    get_commands as get_relational_reasoning_commands,
-)
-from kubejobs.experiments.medical_image_classification_command import (
-    get_commands as get_medical_image_classification_commands,
-)
-from kubejobs.experiments.zero_shot_learning_command import (
-    get_commands as get_zero_shot_learning_commands,
-)
-from kubejobs.experiments.few_shot_learning_command import (
-    get_commands as get_few_shot_learning_commands,
-)
-
-from kubejobs.experiments.pvc_status import PVCStatus, get_pvc_status
-
-import logging
-from rich.logging import RichHandler
-
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-handler = RichHandler(markup=True)
-handler.setFormatter(logging.Formatter("%(message)s"))
-logger.addHandler(handler)
-
 env_vars = dict(
-    NEPTUNE_API_TOKEN="eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLm5lcHR1bmUuYWkiLCJhcGlfdXJsIjoiaHR0cHM6Ly9hcHAubmVwdHVuZS5haSIsImFwaV9rZXkiOiJkOTFjMTY5Zi03ZGUwLTQ4ODYtYWI0Zi1kZDEzNjlkMGI5ZjQifQ==",
-    NEPTUNE_PROJECT="MachineLearningBrewery/gate-exp-0-8-6",
-    NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE="TRUE",
-    WANDB_API_KEY="821661c6ee1657a2717093701ab76574ae1a9be0",
-    WANDB_ENTITY="machinelearningbrewery",
-    WANDB_PROJECT="gate-exp-0-8-6",
-    KAGGLE_USERNAME="antreasantoniou",
-    KAGGLE_KEY="d14aab63e71334cfa118bd5251bf85da",
-    PYTEST_DIR="/data/",
-    EXPERIMENT_NAME="gate-exp-0-8-6",
-    HF_USERNAME="Antreas",
-    HF_TOKEN="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",
-    HF_CACHE_DIR="/data/",
-    TOKENIZERS_PARALLELISM="false",
-    CODE_DIR="/app/",
-    PROJECT_DIR="/app/",
     EXPERIMENT_NAME_PREFIX="gate-exp",
     EXPERIMENTS_DIR="/data/experiments/",
     EXPERIMENT_DIR="/data/experiments/",
@@ -94,19 +76,7 @@ pvc_dict = get_pvc_status()
 
 prefix = "hades"
 
-zs_experiment_dict = get_zero_shot_learning_commands(prefix=prefix)
-fs_experiment_dict = get_few_shot_learning_commands(prefix=prefix)
-med_experiment_dict = get_medical_image_classification_commands(prefix=prefix)
-im_class_experiment_dict = get_image_classification_commands(prefix=prefix)
-rr_experiment_dict = get_relational_reasoning_commands(prefix=prefix)
-
-experiment_dict = (
-    zs_experiment_dict
-    | fs_experiment_dict
-    | med_experiment_dict
-    | im_class_experiment_dict
-    | rr_experiment_dict
-)
+experiment_dict = 
 
 
 # A summary of the GPU setup is:

@@ -3,7 +3,6 @@ import time
 
 from kubejobs.jobs import KubernetesJob
 
-
 env_vars = {
     "NEPTUNE_API_TOKEN": "eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLm5lcHR1bmUuYWkiLCJhcGlfdXJsIjoiaHR0cHM6Ly9hcHAubmVwdHVuZS5haSIsImFwaV9rZXkiOiJkOTFjMTY5Zi03ZGUwLTQ4ODYtYWI0Zi1kZDEzNjlkMGI5ZjQifQ==",
     "NEPTUNE_PROJECT": "MachineLearningBrewery/gate-exp-0-8-6",

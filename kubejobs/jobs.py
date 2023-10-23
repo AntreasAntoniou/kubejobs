@@ -1,3 +1,4 @@
+import datetime
 import logging
 import os
 import subprocess
@@ -18,6 +19,48 @@ logger.addHandler(handler)
 MAX_CPU = 192
 MAX_RAM = 890
 MAX_GPU = 8
+
+# A summary of the GPU setup is:
+
+# * 32 full Nvidia A100 80 GB GPUs
+# * 88 full Nvidia A100 40 GB GPUs
+# * 14 MIG Nvidia A100 40 GB GPUs equating to 28 Nvidia A100 3G.20GB GPUs
+# * 20 MIG Nvidia A100 40 GB GPU equating to 140 A100 1G.5GB GPUs
+
+import grp
+import os
+import pwd
+
+
+def fetch_user_info():
+    user_info = {}
+
+    # Get the current user name
+    user_info["user"] = os.getlogin()
+
+    # Get user entry from /etc/passwd
+    pw_entry = pwd.getpwnam(os.getlogin())
+
+    # Extracting home directory and shell from the password entry
+    user_info["home"] = pw_entry.pw_dir
+    user_info["shell"] = pw_entry.pw_shell
+
+    # Get group IDs
+    group_ids = os.getgrouplist(os.getlogin(), pw_entry.pw_gid)
+
+    # Get group names from group IDs
+    user_info["groups"] = " ".join(
+        [grp.getgrgid(gid).gr_name for gid in group_ids]
+    )
+
+    return user_info
+
+
+class GPU_PRODUCT:
+    NVIDIA_A100_SXM4_80GB = "NVIDIA-A100-SXM4-80GB"
+    NVIDIA_A100_SXM4_40GB = "NVIDIA-A100-SXM4-40GB"
+    NVIDIA_A100_SXM4_40GB_MIG_3G_20GB = "NVIDIA-A100-SXM4-40GB-MIG-3g.20gb"
+    NVIDIA_A100_SXM4_40GB_MIG_1G_5GB = "NVIDIA-A100-SXM4-40GB-MIG-1g.5gb"
 
 
 class KubernetesJob:
@@ -54,7 +97,7 @@ class KubernetesJob:
         self,
         name: str,
         image: str,
-        command: List[str],
+        command: List[str] = None,
         args: Optional[List[str]] = None,
         cpu_request: Optional[str] = None,
         ram_request: Optional[str] = None,
@@ -69,13 +112,23 @@ class KubernetesJob:
         env_vars: Optional[dict] = None,
         volume_mounts: Optional[dict] = None,
         job_deadlineseconds: Optional[int] = None,
+        privileged_security_context: bool = False,
     ):
         self.name = name
+        self.metadata = fetch_user_info()
         self.image = image
         self.command = command
         self.args = args
-        self.cpu_request = cpu_request if cpu_request else MAX_CPU // gpu_limit
-        self.ram_request = ram_request if ram_request else MAX_RAM // gpu_limit
+        self.cpu_request = (
+            cpu_request
+            if cpu_request
+            else MAX_CPU // (MAX_GPU - gpu_limit + 1)
+        )
+        self.ram_request = (
+            ram_request
+            if ram_request
+            else f"{MAX_RAM // (MAX_GPU - gpu_limit + 1)}G"
+        )
         self.storage_request = storage_request
         self.gpu_type = gpu_type
         self.gpu_product = gpu_product
@@ -83,16 +136,21 @@ class KubernetesJob:
             gpu_limit is not None
         ), f"gpu_limit must be set to a value between 1 and {MAX_GPU}, not {gpu_limit}"
         assert (
-            gpu_type > 0
+            gpu_limit > 0
         ), f"gpu_limit must be set to a value between 1 and {MAX_GPU}, not {gpu_limit}"
         self.gpu_limit = gpu_limit
         self.backoff_limit = backoff_limit
         self.restart_policy = restart_policy
-        self.shm_size = shm_size
+        self.shm_size = (
+            ram_request
+            if ram_request
+            else f"{MAX_RAM // (MAX_GPU - gpu_limit + 1)}G"
+        )
         self.secret_env_vars = secret_env_vars
         self.env_vars = env_vars
         self.volume_mounts = volume_mounts
         self.job_deadlineseconds = job_deadlineseconds
+        self.privileged_security_context = privileged_security_context
 
     def _add_shm_size(self, container: dict):
         """Adds shared memory volume if shm_size is set."""
@@ -142,12 +200,19 @@ class KubernetesJob:
 
         return container
 
+    def _add_privileged_security_context(self, container: dict):
+        """Adds privileged security context to the container."""
+        if self.privileged_security_context:
+            container["securityContext"] = {
+                "privileged": True,
+            }
+
+        return container
+
     def generate_yaml(self):
         container = {
             "name": self.name,
             "image": self.image,
-            "command": self.command,
-            "args": self.args,
             "imagePullPolicy": "Always",
             "volumeMounts": [],
             "resources": {
@@ -155,6 +220,12 @@ class KubernetesJob:
                 "limits": {},
             },
         }
+
+        if self.command is not None:
+            container["command"] = self.command
+
+        if self.args is not None:
+            container["args"] = self.args
 
         if not (
             self.gpu_type is None
@@ -168,6 +239,7 @@ class KubernetesJob:
         container = self._add_shm_size(container)
         container = self._add_env_vars(container)
         container = self._add_volume_mounts(container)
+        container = self._add_privileged_security_context(container)
 
         if (
             self.cpu_request is not None
@@ -201,7 +273,10 @@ class KubernetesJob:
         job = {
             "apiVersion": "batch/v1",
             "kind": "Job",
-            "metadata": {"name": self.name},
+            "metadata": {
+                "name": self.name,
+                "annotations": self.metadata,  # Add metadata here
+            },
             "spec": {
                 "template": {
                     "spec": {
@@ -274,14 +349,14 @@ class KubernetesJob:
                 stderr=subprocess.PIPE,
                 text=True,
             )
-        except subprocess.CalledProcessError as e:
-            logger.debug(
-                f"Command failed with return code {e.returncode}, stderr: {e.stderr}"
-            )
-
-        # Remove the temporary file
-        os.remove("temp_job.yaml")
-        return result
+            # Remove the temporary file
+            os.remove("temp_job.yaml")
+            return result.returncode
+        except Exception as e:
+            logger.info(f"Command failed with return code {e}")
+            # Remove the temporary file
+            os.remove("temp_job.yaml")
+            return result
 
     @classmethod
     def from_command_line(cls):

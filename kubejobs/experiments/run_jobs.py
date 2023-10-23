@@ -4,27 +4,12 @@ import random
 import time
 from collections import defaultdict
 
+from gate.menu_generator.menu_builder import run_experiments
 from rich import print
 from rich.logging import RichHandler
 from tqdm.auto import tqdm
 
-
-from kubejobs.experiments.few_shot_learning_command import (
-    get_commands as get_few_shot_learning_commands,
-)
-from kubejobs.experiments.image_classification_command import (
-    get_commands as get_image_classification_commands,
-)
-from kubejobs.experiments.medical_image_classification_command import (
-    get_commands as get_medical_image_classification_commands,
-)
 from kubejobs.experiments.pvc_status import PVCStatus, get_pvc_status
-from kubejobs.experiments.relational_reasoning_command import (
-    get_commands as get_relational_reasoning_commands,
-)
-from kubejobs.experiments.zero_shot_learning_command import (
-    get_commands as get_zero_shot_learning_commands,
-)
 from kubejobs.jobs import (
     KubernetesJob,
     create_jobs_for_experiments,
@@ -47,7 +32,7 @@ gpu_type_to_max_count = {
 
 
 def get_gpu_type_to_use():
-    active_gpus = count_gpu_usage()["active"]
+    active_gpus = count_gpu_usage()["Available"]
     available_gpu_types = []
 
     for key, value in active_gpus.items():
@@ -63,26 +48,48 @@ def get_gpu_type_to_use():
     )
 
 
-env_vars = dict(
-    EXPERIMENT_NAME_PREFIX="gate-exp",
-    EXPERIMENTS_DIR="/data/experiments/",
-    EXPERIMENT_DIR="/data/experiments/",
-    DATASET_DIR="/data/",
-    MODEL_DIR="/data/model/",
-)
+env_vars = {
+    "NEPTUNE_API_TOKEN": "eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLm5lcHR1bmUuYWkiLCJhcGlfdXJsIjoiaHR0cHM6Ly9hcHAubmVwdHVuZS5haSIsImFwaV9rZXkiOiJkOTFjMTY5Zi03ZGUwLTQ4ODYtYWI0Zi1kZDEzNjlkMGI5ZjQifQ==",
+    "NEPTUNE_PROJECT": "MachineLearningBrewery/gate-exp-0-8-6",
+    "NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE": "TRUE",
+    "WANDB_API_KEY": "821661c6ee1657a2717093701ab76574ae1a9be0",
+    "WANDB_ENTITY": "machinelearningbrewery",
+    "WANDB_PROJECT": "gate-0-8-12",
+    "KAGGLE_USERNAME": "antreasantoniou",
+    "KAGGLE_KEY": "d14aab63e71334cfa118bd5251bf85da",
+    "PYTEST_DIR": "/data/",
+    "EXPERIMENT_NAME": "gate-0-8-12",
+    "HF_USERNAME": "Antreas",
+    "HF_TOKEN": "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",
+    "HF_CACHE_DIR": "/data/",
+    "TOKENIZERS_PARALLELISM": "false",
+    "CODE_DIR": "/app/",
+    "PROJECT_DIR": "/app/",
+    "EXPERIMENT_NAME_PREFIX": "gate-0-8-12",
+    "EXPERIMENTS_DIR": "/data/experiments/",
+    "EXPERIMENT_DIR": "/data/experiments/",
+    "DATASET_DIR": "/data/",
+    "MODEL_DIR": "/data/model/",
+}
 
 
 pvc_dict = get_pvc_status()
 
-prefix = "hades"
 
-experiment_dict = 
+experiment_dict = run_experiments(
+    prefix="systest",
+    experiment_type="all",
+    accelerate_launch_path="/opt/conda/envs/main/bin/accelerate-launch",
+    gate_run_path="/app/gate/run.py",
+    seed_list=[7],
+    print_commands=True,
+)
 
 
 # A summary of the GPU setup is:
 
 # * 32 full Nvidia A100 80 GB GPUs
-# * 70 full Nvidia A100 40 GB GPUs
+# * 88 full Nvidia A100 40 GB GPUs
 # * 14 MIG Nvidia A100 40 GB GPUs equating to 28 Nvidia A100 3G.20GB GPUs
 # * 20 MIG Nvidia A100 40 GB GPU equating to 140 A100 1G.5GB GPUs
 
@@ -104,8 +111,6 @@ experiment_dict = dict(experiment_dict)
 #     key: value for key, value in experiment_dict.items() if "winogr" not in key
 # }
 
-for name, command in experiment_dict.items():
-    print(f"Command for {name}: {command}")
 
 print(
     f"Total number of commands: {len(experiment_dict)}, each needs 1 GPU hour, so total GPU hours: {len(experiment_dict)}"
@@ -114,7 +119,7 @@ print(
 # for i in range(total_pvc_count):
 #     pvc_name = f"gate-pvc-{i}"
 #     pvc_name = create_pvc(
-#         pvc_name=pvc_name, storage="2Ti", access_modes="ReadWriteOnce"
+#         pvc_name=pvc_name, storage="4Ti", access_modes="ReadWriteOnce"
 #     )
 job_succesfully_launched = False
 idx = 0
@@ -140,17 +145,16 @@ while idx < len(experiment_dict.items()):
     while not job_succesfully_launched:
         name, command = experiment_list[idx]
 
-        if "fs" in name:
-            gpu_type = "NVIDIA-A100-SXM4-80GB"
+        # if "fs" in name:
+        #     gpu_type = "NVIDIA-A100-SXM4-80GB"
 
         job = KubernetesJob(
-            name=f"{name}",
-            image="ghcr.io/antreasantoniou/gate:0.8.8",
+            name=f"{name}".lower(),
+            image="ghcr.io/antreasantoniou/gate:latest",
             command=["/bin/bash", "-c", "--"],
             args=[f"{command}"],
             gpu_type="nvidia.com/gpu",
             gpu_product=gpu_type,
-            shm_size="100G",  # this is key for pytorch dataloaders and other operations that need access to shared memory (RAM) under the /dev/shm directory
             gpu_limit=1,
             backoff_limit=4,
             volume_mounts={
@@ -161,17 +165,21 @@ while idx < len(experiment_dict.items()):
             },
             env_vars=env_vars,
             job_deadlineseconds=3600 * 2 * 1,
+            ram_request="80G",
+            cpu_request=16,
         )
 
         job_yaml = job.generate_yaml()
         print(
             f"Attemping to launch job {name} on {gpu_type} with PVC {pvc_name}"
         )
+        result = 1
         try:
             result = job.run()
-            job_succesfully_launched = result.returncode == 0
+            job_succesfully_launched = result == 0
         except Exception as e:
             logger.info(f"Job {name} failed with error: {e}")
         idx += 1
+        print(f"Result: {result}")
 
     time.sleep(2)

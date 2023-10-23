@@ -1,3 +1,4 @@
+import datetime
 import logging
 import os
 import subprocess
@@ -25,6 +26,13 @@ MAX_GPU = 8
 # * 88 full Nvidia A100 40 GB GPUs
 # * 14 MIG Nvidia A100 40 GB GPUs equating to 28 Nvidia A100 3G.20GB GPUs
 # * 20 MIG Nvidia A100 40 GB GPU equating to 140 A100 1G.5GB GPUs
+
+
+class GPU_PRODUCT:
+    NVIDIA_A100_SXM4_80GB = "NVIDIA-A100-SXM4-80GB"
+    NVIDIA_A100_SXM4_40GB = "NVIDIA-A100-SXM4-40GB"
+    NVIDIA_A100_SXM4_40GB_MIG_3G_20GB = "NVIDIA-A100-SXM4-40GB-MIG-3g.20gb"
+    NVIDIA_A100_SXM4_40GB_MIG_1G_5GB = "NVIDIA-A100-SXM4-40GB-MIG-1g.5gb"
 
 
 class KubernetesJob:
@@ -79,6 +87,13 @@ class KubernetesJob:
         privileged_security_context: bool = False,
     ):
         self.name = name
+        self.metadata = {
+            "username": os.getenv("USER", "unknown"),  # Fetch username
+            "timestamp": datetime.now().strftime(
+                "%Y-%m-%d %H:%M:%S"
+            ),  # Add a timestamp
+            "host": os.uname()[1],  # Host machine details
+        }
         self.image = image
         self.command = command
         self.args = args
@@ -236,7 +251,10 @@ class KubernetesJob:
         job = {
             "apiVersion": "batch/v1",
             "kind": "Job",
-            "metadata": {"name": self.name},
+            "metadata": {
+                "name": self.name,
+                "annotations": self.metadata,  # Add metadata here
+            },
             "spec": {
                 "template": {
                     "spec": {
@@ -313,9 +331,7 @@ class KubernetesJob:
             os.remove("temp_job.yaml")
             return result.returncode
         except Exception as e:
-            logger.info(
-                f"Command failed with return code {e}, stderr: {e.stderr}"
-            )
+            logger.info(f"Command failed with return code {e}")
             # Remove the temporary file
             os.remove("temp_job.yaml")
             return result

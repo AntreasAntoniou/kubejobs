@@ -27,6 +27,34 @@ MAX_GPU = 8
 # * 14 MIG Nvidia A100 40 GB GPUs equating to 28 Nvidia A100 3G.20GB GPUs
 # * 20 MIG Nvidia A100 40 GB GPU equating to 140 A100 1G.5GB GPUs
 
+import grp
+import os
+import pwd
+
+
+def fetch_user_info():
+    user_info = {}
+
+    # Get the current user name
+    user_info["user"] = os.getlogin()
+
+    # Get user entry from /etc/passwd
+    pw_entry = pwd.getpwnam(os.getlogin())
+
+    # Extracting home directory and shell from the password entry
+    user_info["home"] = pw_entry.pw_dir
+    user_info["shell"] = pw_entry.pw_shell
+
+    # Get group IDs
+    group_ids = os.getgrouplist(os.getlogin(), pw_entry.pw_gid)
+
+    # Get group names from group IDs
+    user_info["groups"] = " ".join(
+        [grp.getgrgid(gid).gr_name for gid in group_ids]
+    )
+
+    return user_info
+
 
 class GPU_PRODUCT:
     NVIDIA_A100_SXM4_80GB = "NVIDIA-A100-SXM4-80GB"
@@ -87,13 +115,7 @@ class KubernetesJob:
         privileged_security_context: bool = False,
     ):
         self.name = name
-        self.metadata = {
-            "username": os.getenv("USER", "unknown"),  # Fetch username
-            "timestamp": datetime.now().strftime(
-                "%Y-%m-%d %H:%M:%S"
-            ),  # Add a timestamp
-            "host": os.uname()[1],  # Host machine details
-        }
+        self.metadata = fetch_user_info()
         self.image = image
         self.command = command
         self.args = args

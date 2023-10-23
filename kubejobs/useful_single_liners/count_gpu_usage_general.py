@@ -1,24 +1,13 @@
-import re
+import json
 import subprocess
-from collections import defaultdict
-from typing import OrderedDict
+from collections import OrderedDict, defaultdict
 
-import yaml
 from rich import print
 from rich.console import Console
 from rich.table import Table
 from tqdm.auto import tqdm
 
-# NVIDIA-A100-SXM4-80GB – a full non-MIG 80GB GPU
-# NVIDIA-A100-SXM4-40GB – a full non-MIG 40GB GPU
-# NVIDIA-A100-SXM4-40GB-MIG-3g.20gb – just under half-GPU
-# NVIDIA-A100-SXM4-40GB-MIG-1g.5gb – a seventh of a GPU
-
-# 32 Nvidia A100 80 GB GPUs
-# 70 Nvidia A100 40 GB GPUs
-# 28 Nvidia A100 3G.20GB GPUs
-# 140 A100 1G.5GB GPUs
-
+# GPU details
 GPU_DETAIL_DICT = {
     "NVIDIA-A100-SXM4-80GB": 32,
     "NVIDIA-A100-SXM4-40GB": 88,
@@ -27,57 +16,88 @@ GPU_DETAIL_DICT = {
 }
 
 
-def run_subprocess(command):
-    result = subprocess.run(command, capture_output=True, text=True)
-    return result.stdout.split("\n")
+# 🚀 Execute the shell command and get the output
+def run_command(command: str) -> str:
+    result = subprocess.run(
+        command,
+        shell=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    return result.stdout
 
 
-def get_pods():
-    pods = run_subprocess(
-        [
-            "kubectl",
-            "get",
-            "pods",
-            "-o",
-            "jsonpath={range .items[*]}{.metadata.name}{','}{.status.phase}{','}{end}",
-        ]
+def get_k8s_pods_gpu_info():
+    # Run kubectl command to get all pods in JSON format
+    result = subprocess.run(
+        ["kubectl", "get", "pods", "-o", "json"], stdout=subprocess.PIPE
     )
 
-    # Split the string into a list of pods
-    pods = pods[0].split(",")[
-        :-1
-    ]  # The last item is an empty string due to the trailing comma
+    pod_json = json.loads(result.stdout)
 
-    # Group the pods into pairs of (name, status)
-    pods = list(zip(pods[::2], pods[1::2]))
+    # Initialize the dictionary to store GPU info for each pod
+    pod_gpu_info = {}
 
-    return pods
+    # Loop through each pod
+    for pod in pod_json["items"]:
+        pod_name = pod["metadata"]["name"]
+        containers = pod["spec"]["containers"]
+
+        # Initialize GPU count to 0
+        gpu_count = 0
+        gpu_type = "Unknown"
+
+        # Check if pod has nodeSelector for GPU type
+        if "nodeSelector" in pod["spec"]:
+            gpu_type = pod["spec"]["nodeSelector"].get(
+                "nvidia.com/gpu.product", "Unknown"
+            )
+
+        # Loop through each container to sum up GPU requests
+        for container in containers:
+            resources = container["resources"]
+            if (
+                "limits" in resources
+                and "nvidia.com/gpu" in resources["limits"]
+            ):
+                gpu_count += int(resources["limits"]["nvidia.com/gpu"])
+
+        # Store GPU info for the pod
+        pod_gpu_info[pod_name] = {
+            "gpu_count": gpu_count,
+            "gpu_type": gpu_type,
+            "phase": pod["status"]["phase"],
+        }
+
+    return pod_gpu_info
 
 
-def describe_pod(pod):
-    result = run_subprocess(["kubectl", "describe", "pod", pod])
-    return result
-
-
-def extract_gpu_info(pod_description):
-    model_pattern = re.compile(r"nvidia\.com/gpu\.product=(\S+)")
-    count_pattern = re.compile(r"nvidia\.com/gpu:\s+(\d+)")
-
-    model_match = model_pattern.search(pod_description)
-    count_match = count_pattern.search(pod_description)
-
-    gpu_model = model_match.group(1) if model_match else None
-    gpu_count = int(count_match.group(1)) if count_match else None
-
+# 📝 Extract GPU info from containers' resources
+def extract_gpu_info(containers):
+    gpu_model = None
+    gpu_count = 0
+    for container in containers:
+        resources = container.get("resources", {})
+        limits = resources.get("limits", {})
+        if "nvidia.com/gpu" in limits:
+            gpu_count += int(limits["nvidia.com/gpu"])
+            annotations = container.get("annotations", {})
+            gpu_model = annotations.get("nvidia.com/gpu.product")
     return gpu_model, gpu_count
 
 
 def count_gpu_usage():
-    pods = get_pods()
+    pod_gpu_info = get_k8s_pods_gpu_info()
     gpu_usage = {"Available": OrderedDict()}
-    for pod, status in tqdm(pods):
-        pod_description = "\n".join(describe_pod(pod))
-        gpu_model, gpu_count = extract_gpu_info(pod_description)
+
+    for pod_name, info in pod_gpu_info.items():
+        gpu_model = info["gpu_type"]
+        gpu_count = info["gpu_count"]
+
+        # Here you may also consider the 'status' of the pod to categorize GPU usage
+        status = info["phase"]
+
         if gpu_model and gpu_count:
             if status not in gpu_usage:
                 gpu_usage[status] = OrderedDict()
@@ -87,7 +107,7 @@ def count_gpu_usage():
                 gpu_usage[status][gpu_model] = gpu_count
 
     gpu_usage["Available"] = {
-        k: v - gpu_usage["Running"][k] if k in gpu_usage["Running"] else v
+        k: v - gpu_usage.get("Running", {}).get(k, 0)
         for k, v in GPU_DETAIL_DICT.items()
     }
 
@@ -107,15 +127,8 @@ if __name__ == "__main__":
 
     console = Console()
 
-    # Create a defaultdict to ensure that if a GPU model is not present, it defaults to 0
-    full_gpu_usage = defaultdict(lambda: defaultdict(int))
-
-    for status, gpu_dict in gpu_usage.items():
-        for gpu_model, count in gpu_dict.items():
-            full_gpu_usage[status][gpu_model] = count
-
     # Populate the table
-    for status, gpu_dict in full_gpu_usage.items():
+    for status, gpu_dict in gpu_usage.items():
         row = [status]
         for gpu_model in GPU_DETAIL_DICT.keys():
             row.append(

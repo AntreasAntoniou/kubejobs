@@ -35,6 +35,37 @@ def run_command(cmd: str) -> str:
     return result.stdout
 
 
+def convert_to_gigabytes(value: str) -> float:
+    """
+    Convert the given storage/memory value to base Gigabytes (GB).
+
+    Args:
+        value (str): Input storage/memory value with units. E.g., '20G', '20Gi', '2000M', '2000Mi'
+
+    Returns:
+        float: The value converted to Gigabytes (GB).
+    """
+    # Define conversion factors
+    factor_gb = {
+        "G": 1,
+        "Gi": 1 / 1.073741824,
+        "M": 1 / 1024,
+        "Mi": 1 / (1024 * 1.073741824),
+    }
+
+    # Find the numeric and unit parts of the input
+    numeric_part = "".join(filter(str.isdigit, value))
+    unit_part = "".join(filter(str.isalpha, value))
+
+    # Convert to Gigabytes (GB)
+    if unit_part in factor_gb.keys():
+        return float(numeric_part) * factor_gb[unit_part]
+    else:
+        raise ValueError(
+            f"Unknown unit {unit_part}. Supported units are {list(factor_gb.keys())}."
+        )
+
+
 def fetch_and_render_job_info(namespace="informatics"):
     # Initialize Rich Console and Progress Bar
     console = Console()
@@ -93,12 +124,10 @@ def fetch_and_render_job_info(namespace="informatics"):
             completions = spec.get("completions", "N/A")
             failed = status.get("failed", "N/A")
             succeeded = status.get("succeeded", "N/A")
-            cpu_request = resources.get("requests", {}).get("cpu", "N/A")
+            cpu_request = resources.get("requests", {}).get("cpu", "-1")
             memory_request = resources.get("requests", {}).get("memory", "N/A")
             gpu_type = node_selector.get("nvidia.com/gpu.product", "N/A")
-            gpu_limit = resources.get("limits", {}).get(
-                "nvidia.com/gpu", "N/A"
-            )
+            gpu_limit = resources.get("limits", {}).get("nvidia.com/gpu", "-1")
 
             st_data.append(
                 [
@@ -111,10 +140,10 @@ def fetch_and_render_job_info(namespace="informatics"):
                     str(completions),
                     str(failed),
                     str(succeeded),
-                    cpu_request,
-                    memory_request,
+                    int(cpu_request),
+                    convert_to_gigabytes(memory_request),
                     gpu_type,
-                    gpu_limit,
+                    int(gpu_limit),
                 ]
             )
             table.add_row(
@@ -128,7 +157,7 @@ def fetch_and_render_job_info(namespace="informatics"):
                 str(failed),
                 str(succeeded),
                 cpu_request,
-                memory_request,
+                str(convert_to_gigabytes(memory_request)),
                 gpu_type,
                 str(gpu_limit),
             )

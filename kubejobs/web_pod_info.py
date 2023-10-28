@@ -35,6 +35,39 @@ def run_command(command: str) -> str:
     return result.stdout
 
 
+def convert_to_gigabytes(value: str) -> float:
+    """
+    Convert the given storage/memory value to base Gigabytes (GB).
+
+    Args:
+        value (str): Input storage/memory value with units. E.g., '20G', '20Gi', '2000M', '2000Mi'
+
+    Returns:
+        float: The value converted to Gigabytes (GB).
+    """
+    # Define conversion factors
+    factor_gb = {
+        "G": 1,
+        "Gi": 1 / 1.073741824,
+        "M": 1 / 1024,
+        "Mi": 1 / (1024 * 1.073741824),
+    }
+
+    # Find the numeric and unit parts of the input
+    numeric_part = "".join(filter(str.isdigit, value))
+    unit_part = "".join(filter(str.isalpha, value))
+
+    # Convert to Gigabytes (GB)
+    if unit_part in factor_gb.keys():
+        return float(numeric_part) * factor_gb[unit_part]
+    elif value == "N/A":
+        return -1
+    else:
+        raise ValueError(
+            f"Unknown unit {unit_part}. Supported units are {list(factor_gb.keys())}."
+        )
+
+
 def fetch_and_render_pod_info(namespace="informatics"):
     get_pods_cmd = f"kubectl get pods -n {namespace} -o json"
     pods_output = run_command(get_pods_cmd)
@@ -83,17 +116,7 @@ def fetch_and_render_pod_info(namespace="informatics"):
             namespace = metadata["namespace"]
             uid = metadata["uid"]
 
-            # "spec": {
-            #     "template": {
-            #         "metadata": {
-            #             "annotations": self.metadata  # Add metadata to Pod template as well
-            #         },
-            username = (
-                spec.get("template", {})
-                .get("metadata", "N/A")
-                .get("annotations")
-                .get("username", "N/A")
-            )
+            username = metadata.get("annotations", {}).get("username", "N/A")
 
             pod_status = status["phase"]
             node = spec.get("nodeName", "N/A")
@@ -102,35 +125,48 @@ def fetch_and_render_pod_info(namespace="informatics"):
             image = container.get("image", "N/A")
 
             resources = container.get("resources", {})
-            cpu_request = resources.get("requests", {}).get("cpu", "N/A")
+            cpu_request = resources.get("requests", {}).get("cpu", "-1")
             memory_request = resources.get("requests", {}).get("memory", "N/A")
             gpu_type = spec.get("nodeSelector", {}).get(
                 "nvidia.com/gpu.product", "N/A"
             )
-            gpu_limit = resources.get("limits", {}).get(
-                "nvidia.com/gpu", "N/A"
-            )
+            gpu_limit = resources.get("limits", {}).get("nvidia.com/gpu", "-1")
 
             creation_time = parse_iso_time(metadata["creationTimestamp"])
             age = time_diff_to_human_readable(creation_time, current_time)
 
-            row = [
-                name,
-                namespace,
-                username,
-                uid,
+            data.append(
+                [
+                    str(name),
+                    str(namespace),
+                    str(username),
+                    str(uid),
+                    pod_status,
+                    node,
+                    image,
+                    int(cpu_request),
+                    convert_to_gigabytes(memory_request),
+                    gpu_type,
+                    int(gpu_limit),
+                    str(creation_time),
+                    age,
+                ]
+            )
+            table.add_row(
+                str(name),
+                str(namespace),
+                str(username),
+                str(uid),
                 pod_status,
                 node,
                 image,
                 cpu_request,
-                memory_request,
+                str(convert_to_gigabytes(memory_request)),
                 gpu_type,
                 str(gpu_limit),
                 str(creation_time),
                 age,
-            ]
-            data.append(row)
-            table.add_row(*row)
+            )
 
     console.print(table)
 

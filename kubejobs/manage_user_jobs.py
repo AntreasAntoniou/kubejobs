@@ -111,7 +111,7 @@ def list_or_delete_jobs_by_user(
     username: str,
     term: str,
     delete: bool = False,
-    show_job_status: bool = False,
+    show_job_status: bool = True,
 ) -> None:
     # Fetch all jobs from a specific Kubernetes namespace
     get_jobs_cmd = f"kubectl get jobs -n {namespace} -o json"

@@ -1,7 +1,7 @@
 from pkg_resources import require
 from setuptools import find_packages, setup
 
-requirements = ["fire", "PyYAML", "kubernetes", "rich"]
+requirements = ["fire", "PyYAML", "kubernetes", "rich", "streamlit"]
 dev_requirements = [
     "docformatter",
     "black",

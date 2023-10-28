@@ -4,7 +4,7 @@ import random
 import time
 from collections import defaultdict
 
-from gate.menu_generator.menu_builder import run_experiments
+from gate.menu.builder import run_experiments
 from rich import print
 from rich.logging import RichHandler
 from tqdm.auto import tqdm
@@ -182,4 +182,4 @@ while idx < len(experiment_dict.items()):
         idx += 1
         print(f"Result: {result}")
 
-    time.sleep(2)
+    # time.sleep(2)

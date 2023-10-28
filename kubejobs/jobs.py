@@ -36,7 +36,7 @@ def fetch_user_info():
     user_info = {}
 
     # Get the current user name
-    user_info["user"] = os.getlogin()
+    user_info["username"] = os.getlogin()
 
     # Get user entry from /etc/passwd
     pw_entry = pwd.getpwnam(os.getlogin())
@@ -279,11 +279,14 @@ class KubernetesJob:
             },
             "spec": {
                 "template": {
+                    "metadata": {
+                        "annotations": self.metadata  # Add metadata to Pod template as well
+                    },
                     "spec": {
                         "containers": [container],
                         "restartPolicy": self.restart_policy,
                         "volumes": [],
-                    }
+                    },
                 },
                 "backoffLimit": self.backoff_limit,
             },

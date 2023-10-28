@@ -96,6 +96,93 @@ create_pv(
 )
 ```
 
+## Utilities
+
+### `web_pod_info.py`
+
+#### Overview
+
+`web_pod_info.py` fetches, processes, and displays Kubernetes pod information. It can produce both console-based and web-based outputs using the Rich and Streamlit libraries, respectively.
+
+#### Features
+
+- Fetch Kubernetes Pod information from a specific namespace.
+- Display the fetched data in a table format in the console.
+- Utilize Streamlit to render the data in a web interface.
+
+#### Usage
+
+##### Command Line
+
+Run the script from the command line with an optional `namespace` parameter:
+
+\`\`\`bash
+python kubejobs/web_pod_info.py --namespace=<your-namespace>
+\`\`\`
+
+##### With Streamlit
+
+Run the script as above, and then navigate to the Streamlit URL displayed in the console to view the web table.
+
+\`\`\`bash
+streamlit run kubejobs/web_pod_info.py
+\`\`\`
+
+### `web_job_info.py`
+
+#### Overview
+
+`web_job_info.py` is a utility script for fetching and displaying information about Kubernetes jobs. It uses the Rich library for console-based output and Streamlit for web-based visualization.
+
+#### Features
+
+- Fetch Kubernetes Job information from a specific namespace.
+- Display the fetched data in a table format in the console.
+- Utilize Streamlit to render the data in a web interface.
+
+#### Usage
+
+##### Command Line
+
+Run the script from the command line with an optional `namespace` parameter:
+
+\`\`\`bash
+python kubejobs/web_job_info.py --namespace=<your-namespace>
+\`\`\`
+
+##### With Streamlit
+
+Run the script as above, and then navigate to the Streamlit URL displayed in the console to view the web table.
+
+\`\`\`bash
+streamlit run kubejobs/web_job_info.py
+\`\`\`
+
+### `manage_user_jobs.py`
+
+#### Overview
+
+`manage_user_jobs.py` is a Python script for listing or deleting Kubernetes jobs initiated by a specific user. It offers console-based output using the Rich library.
+
+#### Features
+
+- Fetch Kubernetes Jobs from a specific namespace.
+- Filter jobs based on username and a search term.
+- Optionally delete jobs that meet the filter criteria.
+
+#### Usage
+
+##### Command Line
+
+Run the script from the command line with optional parameters for namespace, username, search term, and actions.
+
+\`\`\`bash
+python kubejobs/manage_user_jobs.py --namespace=<your-namespace> --username=<your-username> --term=<search-term> --delete=<True/False>
+\`\`\`
+
+#### Note: This script does not support Streamlit.
+
+
 For more detailed examples and usage information, please refer to the official [documentation](https://antreas.io/kubejobs/).
 
 ## Contributing

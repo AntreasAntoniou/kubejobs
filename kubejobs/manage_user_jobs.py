@@ -111,7 +111,7 @@ def list_or_delete_jobs_by_user(
     username: str,
     term: str,
     delete: bool = False,
-    show_job_status: bool = True,
+    show_job_status: bool = False,
 ) -> None:
     # Fetch all jobs from a specific Kubernetes namespace
     get_jobs_cmd = f"kubectl get jobs -n {namespace} -o json"
@@ -164,7 +164,7 @@ def list_or_delete_jobs_by_user(
     for item in tqdm(jobs_json["items"]):
         annotations = item["metadata"].get("annotations", {})
         if (
-            annotations.get("user", "") == username
+            annotations.get("username", "") == username
             and term in item["metadata"]["name"]
         ):
             filtered_jobs.append(item)

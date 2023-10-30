@@ -99,24 +99,23 @@ def fetch_and_render_pod_info(
 ):
     name_set = set()
 
-    while True:
-        get_pods_cmd = f"kubectl get pods -n {namespace} -o json"
-        pods_output, pods_error = run_command(get_pods_cmd)
-        pod_data = json.loads(pods_output)
+    get_pods_cmd = f"kubectl get pods -n {namespace} -o json"
+    pods_output, pods_error = run_command(get_pods_cmd)
+    pod_data = json.loads(pods_output)
 
-        current_time = datetime.now(timezone.utc)
+    current_time = datetime.now(timezone.utc)
 
-        for pod in tqdm(pod_data["items"]):
-            metadata = pod["metadata"]
-            spec = pod.get("spec", {})
-            status = pod["status"]
+    for pod in tqdm(pod_data["items"]):
+        metadata = pod["metadata"]
+        spec = pod.get("spec", {})
+        status = pod["status"]
 
-            name = metadata["name"]
-            namespace = metadata["namespace"]
-            if name in name_set:
-                continue
-            name_set.add(name)
-            create_and_copy_wandb_script(name, namespace, pod)
+        name = metadata["name"]
+        namespace = metadata["namespace"]
+        if name in name_set:
+            continue
+        name_set.add(name)
+        create_and_copy_wandb_script(name, namespace, pod)
 
 
 if __name__ == "__main__":

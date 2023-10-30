@@ -77,12 +77,14 @@ pvc_dict = get_pvc_status()
 
 
 experiment_dict = run_experiments(
-    prefix="systest",
+    prefix="systest2",
     experiment_type="all",
     accelerate_launch_path="/opt/conda/envs/main/bin/accelerate-launch",
     gate_run_path="/app/gate/run.py",
     seed_list=[7],
     print_commands=True,
+    train_iters=75,
+    evaluate_every_n_steps=25,
 )
 
 

@@ -61,9 +61,7 @@ def convert_to_gigabytes(value: str) -> float:
     if unit_part in factor_gb.keys():
         return float(numeric_part) * factor_gb[unit_part]
     else:
-        raise ValueError(
-            f"Unknown unit {unit_part}. Supported units are {list(factor_gb.keys())}."
-        )
+        return None
 
 
 def fetch_and_render_job_info(namespace="informatics"):

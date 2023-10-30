@@ -1,6 +1,7 @@
 import json
 import subprocess
 import time
+from collections import defaultdict
 from datetime import datetime, timezone
 
 import fire
@@ -9,6 +10,34 @@ import pandas as pd
 import rich
 import streamlit as st
 from tqdm import tqdm
+
+
+def exponential_moving_average_efficient(data, N):
+    """
+    Compute the Exponential Moving Average (EMA) for a list of values.
+
+    Args:
+        data (list): The list of data points.
+        span (int): The span N for the EMA calculation.
+
+    Returns:
+        float: The EMA of the data.
+    """
+    # Convert list to numpy array for vectorized operations
+    data_array = np.array(data)
+
+    # Calculate the smoothing factor alpha
+    alpha = 2 / (N + 1)
+
+    # Initialize the EMA array
+    ema = np.zeros_like(data_array)
+    ema[0] = data_array[0]
+
+    # Calculate the EMA
+    for i in range(1, len(data_array)):
+        ema[i] = (alpha * data_array[i]) + ((1 - alpha) * ema[i - 1])
+
+    return ema[-1]
 
 
 def convert_to_gigabytes(value: str) -> float:
@@ -81,8 +110,8 @@ def ssh_into_pod_and_run_command(
 def fetch_and_render_pod_info(
     namespace="informatics",
     loop=True,
-    refresh_interval=60,
-    samples_per_gpu=3,
+    refresh_interval=0,
+    samples_per_gpu=1,
 ):
     """
     Fetches information about Kubernetes pods and renders it in a Streamlit table.
@@ -96,32 +125,36 @@ def fetch_and_render_pod_info(
     # Outside of your loop, before you start refreshing data
     st_table = st.empty()
 
+    columns = [
+        "Name",
+        "Namespace",
+        "Username",
+        "UID",
+        "Status",
+        "Node",
+        "Image",
+        "CPU Request",
+        "Memory Request",
+        "GPU Type",
+        "GPU Limit",
+        "GPU Memory Used",
+        "GPU Memory Total",
+        "GPU Utilization",
+        "Creation Time",
+        "Age",
+    ]
+
+    per_user_total_gpu_memory = defaultdict(list)
+    per_user_total_gpu_utilization = defaultdict(list)
+    per_user_total_gpu_memory_used = defaultdict(list)
+
     while True:
         get_pods_cmd = f"kubectl get pods -n {namespace} -o json"
         pods_output, _ = run_command(get_pods_cmd)
         pod_data = json.loads(pods_output)
 
-        columns = [
-            "Name",
-            "Namespace",
-            "Username",
-            "UID",
-            "Status",
-            "Node",
-            "Image",
-            "CPU Request",
-            "Memory Request",
-            "GPU Type",
-            "GPU Limit",
-            "GPU Memory Used",
-            "GPU Memory Total",
-            "GPU Utilization",
-            "Creation Time",
-            "Age",
-        ]
-        data = []
-
         current_time = datetime.now(timezone.utc)
+        data = []
 
         for pod in tqdm(pod_data["items"]):
             metadata = pod["metadata"]
@@ -152,9 +185,6 @@ def fetch_and_render_pod_info(
             age = time_diff_to_human_readable(creation_time, current_time)
 
             # SSH into the pod and get GPU utilization details
-            gpu_memory_total_list = []
-            gpu_memory_used_list = []
-            gpu_utilization_list = []
 
             for _ in range(samples_per_gpu):
                 gpu_usage_output = ssh_into_pod_and_run_command(
@@ -169,23 +199,39 @@ def fetch_and_render_pod_info(
                         gpu_memory_used,
                         gpu_utilization,
                     ) = line.split(",")
-                    gpu_memory_total_list.append(float(gpu_memory_total))
-                    gpu_memory_used_list.append(float(gpu_memory_used))
-                    gpu_utilization_list.append(float(gpu_utilization))
+
+                    per_user_total_gpu_memory[username].append(
+                        float(gpu_memory_total)
+                    )
+                    per_user_total_gpu_memory_used[username].append(
+                        float(gpu_memory_used)
+                    )
+                    per_user_total_gpu_utilization[username].append(
+                        float(gpu_utilization)
+                    )
 
             gpu_memory_total = (
-                np.mean(gpu_memory_total_list)
-                if len(gpu_memory_total_list) > 0
+                exponential_moving_average_efficient(
+                    data=per_user_total_gpu_memory[username],
+                    N=min(25, len(per_user_total_gpu_memory[username])),
+                )
+                if len(per_user_total_gpu_memory[username]) > 0
                 else -1
             )
             gpu_memory_used = (
-                np.mean(gpu_memory_used_list)
-                if len(gpu_memory_used_list) > 0
+                exponential_moving_average_efficient(
+                    data=per_user_total_gpu_memory_used[username],
+                    N=min(25, len(per_user_total_gpu_memory_used[username])),
+                )
+                if len(per_user_total_gpu_memory_used[username]) > 0
                 else -1
             )
             gpu_utilization = (
-                np.mean(gpu_utilization_list)
-                if len(gpu_utilization_list) > 0
+                exponential_moving_average_efficient(
+                    data=per_user_total_gpu_utilization[username],
+                    N=min(25, len(per_user_total_gpu_utilization[username])),
+                )
+                if len(per_user_total_gpu_utilization[username]) > 0
                 else -1
             )
 
@@ -212,7 +258,8 @@ def fetch_and_render_pod_info(
 
         df = pd.DataFrame(data, columns=columns)
         # Inside your loop, when you update the DataFrame
-        st_table.dataframe(
+
+        st.dataframe(
             df
         )  # This will update the existing table instead of creating a new one
 

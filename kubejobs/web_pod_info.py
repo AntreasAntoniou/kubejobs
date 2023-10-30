@@ -1,14 +1,14 @@
 import json
 import subprocess
+import time
 from datetime import datetime, timezone
 
 import fire
+import numpy as np
 import pandas as pd
 import rich
 import streamlit as st
-from rich.console import Console
-from rich.progress import Progress
-from rich.table import Table
+from tqdm import tqdm
 
 
 def parse_iso_time(time_str: str) -> datetime:
@@ -68,46 +68,71 @@ def convert_to_gigabytes(value: str) -> float:
         )
 
 
-def fetch_and_render_pod_info(namespace="informatics"):
-    get_pods_cmd = f"kubectl get pods -n {namespace} -o json"
-    pods_output = run_command(get_pods_cmd)
-    pod_data = json.loads(pods_output)
-
-    console = Console()
-
-    columns = [
-        "Name",
-        "Namespace",
-        "Username",
-        "UID",
-        "Status",
-        "Node",
-        "Image",
-        "CPU Request",
-        "Memory Request",
-        "GPU Type",
-        "GPU Limit",
-        "Creation Time",
-        "Age",
-    ]
-    data = []
-
-    table = Table(
-        show_header=True, header_style="bold magenta", box=rich.box.SQUARE
+def parse_iso_time(time_str: str) -> datetime:
+    return datetime.strptime(time_str, "%Y-%m-%dT%H:%M:%SZ").replace(
+        tzinfo=timezone.utc
     )
-    for col in columns:
-        table.add_column(col)
 
-    current_time = datetime.now(timezone.utc)
 
-    with Progress() as progress:
-        task = progress.add_task(
-            "[cyan]Processing Pods...", total=len(pod_data["items"])
-        )
+def time_diff_to_human_readable(start: datetime, end: datetime) -> str:
+    diff = end - start
+    minutes, seconds = divmod(diff.seconds, 60)
+    hours, minutes = divmod(minutes, 60)
+    return f"{diff.days}d {hours}h {minutes}m {seconds}s"
 
-        for pod in pod_data["items"]:
-            progress.update(task, advance=1)
 
+def run_command(command: str) -> str:
+    result = subprocess.run(
+        command,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        shell=True,
+    )
+    return result.stdout, result.stderr
+
+
+def ssh_into_pod_and_run_command(
+    pod_name: str, namespace: str, command: str
+) -> str:
+    ssh_command = f"kubectl exec -n {namespace} {pod_name} -- {command}"
+    stdout, stderr = run_command(ssh_command)
+    if stderr:
+        print(f"Error executing command in pod {pod_name}: {stderr}")
+    return stdout
+
+
+def fetch_and_render_pod_info(
+    namespace="informatics", loop=True, refresh_interval=10
+):
+    while True:
+        get_pods_cmd = f"kubectl get pods -n {namespace} -o json"
+        pods_output, _ = run_command(get_pods_cmd)
+        pod_data = json.loads(pods_output)
+
+        columns = [
+            "Name",
+            "Namespace",
+            "Username",
+            "UID",
+            "Status",
+            "Node",
+            "Image",
+            "CPU Request",
+            "Memory Request",
+            "GPU Type",
+            "GPU Limit",
+            "GPU Memory Used",
+            "GPU Memory Total",
+            "GPU Utilization",
+            "Creation Time",
+            "Age",
+        ]
+        data = []
+
+        current_time = datetime.now(timezone.utc)
+
+        for pod in tqdm(pod_data["items"]):
             metadata = pod["metadata"]
             spec = pod.get("spec", {})
             status = pod["status"]
@@ -125,15 +150,51 @@ def fetch_and_render_pod_info(namespace="informatics"):
             image = container.get("image", "N/A")
 
             resources = container.get("resources", {})
-            cpu_request = resources.get("requests", {}).get("cpu", "-1")
+            cpu_request = resources.get("requests", {}).get("cpu", "0")
             memory_request = resources.get("requests", {}).get("memory", "N/A")
             gpu_type = spec.get("nodeSelector", {}).get(
                 "nvidia.com/gpu.product", "N/A"
             )
-            gpu_limit = resources.get("limits", {}).get("nvidia.com/gpu", "-1")
+            gpu_limit = resources.get("limits", {}).get("nvidia.com/gpu", "0")
 
             creation_time = parse_iso_time(metadata["creationTimestamp"])
             age = time_diff_to_human_readable(creation_time, current_time)
+
+            # SSH into the pod and get GPU utilization details
+            gpu_usage_output = ssh_into_pod_and_run_command(
+                name,
+                namespace,
+                "nvidia-smi --query-gpu=memory.total,memory.used,utilization.gpu --format=csv,noheader,nounits",
+            )
+
+            gpu_memory_total_list = []
+            gpu_memory_used_list = []
+            gpu_utilization_list = []
+            for line in gpu_usage_output.splitlines():
+                (
+                    gpu_memory_total,
+                    gpu_memory_used,
+                    gpu_utilization,
+                ) = line.split(",")
+                gpu_memory_total_list.append(float(gpu_memory_total))
+                gpu_memory_used_list.append(float(gpu_memory_used))
+                gpu_utilization_list.append(float(gpu_utilization))
+
+            gpu_memory_total = (
+                np.mean(gpu_memory_total_list)
+                if len(gpu_memory_total_list) > 0
+                else -1
+            )
+            gpu_memory_used = (
+                np.mean(gpu_memory_used_list)
+                if len(gpu_memory_used_list) > 0
+                else -1
+            )
+            gpu_utilization = (
+                np.mean(gpu_utilization_list)
+                if len(gpu_utilization_list) > 0
+                else -1
+            )
 
             data.append(
                 [
@@ -148,30 +209,22 @@ def fetch_and_render_pod_info(namespace="informatics"):
                     convert_to_gigabytes(memory_request),
                     gpu_type,
                     int(gpu_limit),
+                    gpu_memory_used,
+                    gpu_memory_total,
+                    gpu_utilization,
                     str(creation_time),
                     age,
                 ]
             )
-            table.add_row(
-                str(name),
-                str(namespace),
-                str(username),
-                str(uid),
-                pod_status,
-                node,
-                image,
-                cpu_request,
-                str(convert_to_gigabytes(memory_request)),
-                gpu_type,
-                str(gpu_limit),
-                str(creation_time),
-                age,
-            )
 
-    console.print(table)
+        df = pd.DataFrame(data, columns=columns)
+        st.dataframe(df)
 
-    df = pd.DataFrame(data, columns=columns)
-    st.dataframe(df)
+        if not loop:
+            break
+        time.sleep(
+            refresh_interval
+        )  # Refresh every specified number of seconds
 
 
 if __name__ == "__main__":

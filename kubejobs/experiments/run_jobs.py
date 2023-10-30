@@ -181,6 +181,7 @@ while idx < len(experiment_dict.items()):
             job_succesfully_launched = result == 0
         except Exception as e:
             logger.info(f"Job {name} failed with error: {e}")
+            print(f"Job {name} failed with error: {e}")
         idx += 1
         print(f"Result: {result}")
 

@@ -140,6 +140,7 @@ def fetch_and_render_pod_info(
         "GPU Memory Used",
         "GPU Memory Total",
         "GPU Utilization",
+        "GPU Count Actual",
         "Creation Time",
         "Age",
     ]
@@ -185,15 +186,16 @@ def fetch_and_render_pod_info(
             age = time_diff_to_human_readable(creation_time, current_time)
 
             # SSH into the pod and get GPU utilization details
-
+            gpu_count_actual = 0
             for _ in range(samples_per_gpu):
                 gpu_usage_output = ssh_into_pod_and_run_command(
                     name,
                     namespace,
                     "nvidia-smi --query-gpu=memory.total,memory.used,utilization.gpu --format=csv,noheader,nounits",
                 )
-
-                for line in gpu_usage_output.splitlines():
+                lines = gpu_usage_output.splitlines()
+                gpu_count_actual = len(lines)
+                for line in lines:
                     (
                         gpu_memory_total,
                         gpu_memory_used,
@@ -251,6 +253,7 @@ def fetch_and_render_pod_info(
                     gpu_memory_used,
                     gpu_memory_total,
                     gpu_utilization,
+                    gpu_count_actual,
                     str(creation_time),
                     age,
                 ]

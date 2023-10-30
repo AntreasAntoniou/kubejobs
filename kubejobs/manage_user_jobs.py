@@ -164,7 +164,7 @@ def list_or_delete_jobs_by_user(
     for item in tqdm(jobs_json["items"]):
         annotations = item["metadata"].get("annotations", {})
         if (
-            annotations.get("user", "") == username
+            annotations.get("username", "") == username
             and term in item["metadata"]["name"]
         ):
             filtered_jobs.append(item)

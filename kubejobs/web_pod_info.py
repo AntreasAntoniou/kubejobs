@@ -103,8 +103,11 @@ def ssh_into_pod_and_run_command(
 
 
 def fetch_and_render_pod_info(
-    namespace="informatics", loop=True, refresh_interval=10
+    namespace="informatics", loop=True, refresh_interval=60
 ):
+    # Outside of your loop, before you start refreshing data
+    st_table = st.empty()
+
     while True:
         get_pods_cmd = f"kubectl get pods -n {namespace} -o json"
         pods_output, _ = run_command(get_pods_cmd)
@@ -218,7 +221,10 @@ def fetch_and_render_pod_info(
             )
 
         df = pd.DataFrame(data, columns=columns)
-        st.dataframe(df)
+        # Inside your loop, when you update the DataFrame
+        st_table.dataframe(
+            df
+        )  # This will update the existing table instead of creating a new one
 
         if not loop:
             break

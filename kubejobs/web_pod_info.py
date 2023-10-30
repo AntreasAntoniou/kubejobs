@@ -11,30 +11,6 @@ import streamlit as st
 from tqdm import tqdm
 
 
-def parse_iso_time(time_str: str) -> datetime:
-    return datetime.strptime(time_str, "%Y-%m-%dT%H:%M:%SZ").replace(
-        tzinfo=timezone.utc
-    )
-
-
-def time_diff_to_human_readable(start: datetime, end: datetime) -> str:
-    diff = end - start
-    minutes, seconds = divmod(diff.seconds, 60)
-    hours, minutes = divmod(minutes, 60)
-    return f"{diff.days}d {hours}h {minutes}m {seconds}s"
-
-
-def run_command(command: str) -> str:
-    result = subprocess.run(
-        command,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-        shell=True,
-    )
-    return result.stdout
-
-
 def convert_to_gigabytes(value: str) -> float:
     """
     Convert the given storage/memory value to base Gigabytes (GB).
@@ -103,8 +79,20 @@ def ssh_into_pod_and_run_command(
 
 
 def fetch_and_render_pod_info(
-    namespace="informatics", loop=True, refresh_interval=60
+    namespace="informatics",
+    loop=True,
+    refresh_interval=60,
+    samples_per_gpu=3,
 ):
+    """
+    Fetches information about Kubernetes pods and renders it in a Streamlit table.
+
+    Args:
+    - namespace (str): The Kubernetes namespace to fetch pod information from. Default is "informatics".
+    - loop (bool): Whether to continuously refresh the pod information and update the table. Default is True.
+    - refresh_interval (int): The number of seconds to wait between each refresh of the pod information. Default is 60.
+    - samples_per_gpu (int): The number of samples to take when measuring GPU utilization. Default is 3.
+    """
     # Outside of your loop, before you start refreshing data
     st_table = st.empty()
 
@@ -164,24 +152,26 @@ def fetch_and_render_pod_info(
             age = time_diff_to_human_readable(creation_time, current_time)
 
             # SSH into the pod and get GPU utilization details
-            gpu_usage_output = ssh_into_pod_and_run_command(
-                name,
-                namespace,
-                "nvidia-smi --query-gpu=memory.total,memory.used,utilization.gpu --format=csv,noheader,nounits",
-            )
-
             gpu_memory_total_list = []
             gpu_memory_used_list = []
             gpu_utilization_list = []
-            for line in gpu_usage_output.splitlines():
-                (
-                    gpu_memory_total,
-                    gpu_memory_used,
-                    gpu_utilization,
-                ) = line.split(",")
-                gpu_memory_total_list.append(float(gpu_memory_total))
-                gpu_memory_used_list.append(float(gpu_memory_used))
-                gpu_utilization_list.append(float(gpu_utilization))
+
+            for _ in range(samples_per_gpu):
+                gpu_usage_output = ssh_into_pod_and_run_command(
+                    name,
+                    namespace,
+                    "nvidia-smi --query-gpu=memory.total,memory.used,utilization.gpu --format=csv,noheader,nounits",
+                )
+
+                for line in gpu_usage_output.splitlines():
+                    (
+                        gpu_memory_total,
+                        gpu_memory_used,
+                        gpu_utilization,
+                    ) = line.split(",")
+                    gpu_memory_total_list.append(float(gpu_memory_total))
+                    gpu_memory_used_list.append(float(gpu_memory_used))
+                    gpu_utilization_list.append(float(gpu_utilization))
 
             gpu_memory_total = (
                 np.mean(gpu_memory_total_list)

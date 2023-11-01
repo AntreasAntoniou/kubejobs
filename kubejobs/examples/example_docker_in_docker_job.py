@@ -2,7 +2,7 @@ import time
 
 from rich import print
 
-from kubejobs.jobs import GPU_PRODUCT, KubernetesJob
+from kubejobs.jobs import KubernetesJob
 
 # unique id generated using time
 unique_id = time.strftime("%Y%m%d%H%M%S")
@@ -12,12 +12,12 @@ job = KubernetesJob(
     name=f"dind-{unique_id}",
     image="docker:dind",
     gpu_type="nvidia.com/gpu",
-    gpu_product=GPU_PRODUCT.NVIDIA_A100_SXM4_40GB,
+    gpu_product="NVIDIA-A100-SXM4-40GB",
     gpu_limit=1,
-    shm_size="20G",
+    shm_size="100G",
     backoff_limit=4,
-    cpu_request=8,
-    ram_request="20G",
+    cpu_request=24,
+    ram_request="100G",
     privileged_security_context=True,
 )
 
@@ -41,4 +41,4 @@ notes = """
 - Well done! :D
 """
 
-console.print(notes, style="bold magenta", markup=True)
+console.print(notes, style="bold magenta")

@@ -8,9 +8,8 @@ import fire
 import numpy as np
 import pandas as pd
 import rich
-from tqdm.auto import tqdm
-
 import wandb
+from tqdm.auto import tqdm
 
 
 def convert_to_gigabytes(value: str) -> float:

@@ -68,9 +68,7 @@ def convert_to_gigabytes(value: str) -> float:
     elif value == "N/A":
         return -1
     else:
-        raise ValueError(
-            f"Unknown unit {unit_part}. Supported units are {list(factor_gb.keys())}."
-        )
+        return -1
 
 
 def parse_iso_time(time_str: str) -> datetime:

@@ -15,6 +15,8 @@ GPU_DETAIL_DICT = {
     "NVIDIA-A100-SXM4-40GB-MIG-1g.5gb": 140,
 }
 
+INFORMATICS_GPU_ALLOWANCE = 60
+
 
 # 🚀 Execute the shell command and get the output
 def run_command(command: str) -> str:
@@ -107,6 +109,24 @@ def count_gpu_usage():
                 gpu_usage[status][gpu_model] = gpu_count
 
     gpu_usage["Available"] = {
+        k: v - gpu_usage.get("Running", {}).get(k, 0)
+        for k, v in GPU_DETAIL_DICT.items()
+    }
+    used_gpus_total = sum(
+        [
+            gpu_usage.get("Running", {}).get(k, 0)
+            for k, v in GPU_DETAIL_DICT.items()
+        ]
+    )
+    gpu_usage["Informatics Allowance Available"] = {
+        k: min(
+            v - gpu_usage.get("Running", {}).get(k, 0),
+            INFORMATICS_GPU_ALLOWANCE - used_gpus_total,
+        )
+        for k, v in GPU_DETAIL_DICT.items()
+    }
+
+    gpu_usage["Total Available"] = {
         k: v - gpu_usage.get("Running", {}).get(k, 0)
         for k, v in GPU_DETAIL_DICT.items()
     }

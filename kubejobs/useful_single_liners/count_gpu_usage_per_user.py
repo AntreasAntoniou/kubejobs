@@ -6,19 +6,21 @@ import yaml
 
 
 def get_gpu_usage():
-    pods_info = json.loads(
-        subprocess.check_output(["kubectl", "get", "pods", "-o", "json"])
+    json_output = subprocess.check_output(
+        ["kubectl", "get", "pods", "-o", "json"]
     )
+
+    pods_info = json.loads(json_output)
 
     gpu_usage = {}
     user_gpu_usage = {}
     for item in pods_info["items"]:
         pod_name = item["metadata"]["name"]
-        user_name = item["metadata"]["annotations"]["kubernetes.io/created-by"]
+        user_name = pod_name
 
         pod_info = json.loads(
             subprocess.check_output(
-                ["kubectl", "describe", "pod", pod_name, "-o", "json"]
+                ["kubectl", "get", "pods", pod_name, "-o", "json"]
             )
         )
         for container in pod_info["spec"]["containers"]:

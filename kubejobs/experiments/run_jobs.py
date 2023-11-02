@@ -32,7 +32,7 @@ gpu_type_to_max_count = {
 
 
 def get_gpu_type_to_use():
-    active_gpus = count_gpu_usage()["Available"]
+    active_gpus = count_gpu_usage()["Informatics Allowance Available"]
     available_gpu_types = []
 
     for key, value in active_gpus.items():
@@ -118,11 +118,11 @@ print(
     f"Total number of commands: {len(experiment_dict)}, each needs 1 GPU hour, so total GPU hours: {len(experiment_dict)}"
 )
 
-# for i in range(total_pvc_count):
-#     pvc_name = f"gate-pvc-{i}"
-#     pvc_name = create_pvc(
-#         pvc_name=pvc_name, storage="4Ti", access_modes="ReadWriteOnce"
-#     )
+for i in range(total_pvc_count):
+    pvc_name = f"gate-pvc-{i}"
+    pvc_name = create_pvc(
+        pvc_name=pvc_name, storage="4Ti", access_modes="ReadWriteOnce"
+    )
 job_succesfully_launched = False
 idx = 0
 experiment_list = list(experiment_dict.items())

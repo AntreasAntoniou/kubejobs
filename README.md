@@ -116,17 +116,17 @@ create_pv(
 
 Run the script from the command line with an optional `namespace` parameter:
 
-\`\`\`bash
+```bash
 python kubejobs/web_pod_info.py --namespace=<your-namespace>
-\`\`\`
+```
 
 ##### With Streamlit
 
 Run the script as above, and then navigate to the Streamlit URL displayed in the console to view the web table.
 
-\`\`\`bash
+```bash
 streamlit run kubejobs/web_pod_info.py
-\`\`\`
+```
 
 ### `web_job_info.py`
 
@@ -146,17 +146,17 @@ streamlit run kubejobs/web_pod_info.py
 
 Run the script from the command line with an optional `namespace` parameter:
 
-\`\`\`bash
+```bash
 python kubejobs/web_job_info.py --namespace=<your-namespace>
-\`\`\`
+```
 
 ##### With Streamlit
 
 Run the script as above, and then navigate to the Streamlit URL displayed in the console to view the web table.
 
-\`\`\`bash
+```bash
 streamlit run kubejobs/web_job_info.py
-\`\`\`
+```
 
 ### `manage_user_jobs.py`
 
@@ -176,9 +176,9 @@ streamlit run kubejobs/web_job_info.py
 
 Run the script from the command line with optional parameters for namespace, username, search term, and actions.
 
-\`\`\`bash
+```bash
 python kubejobs/manage_user_jobs.py --namespace=<your-namespace> --username=<your-username> --term=<search-term> --delete=<True/False>
-\`\`\`
+```
 
 #### Note: This script does not support Streamlit.
 

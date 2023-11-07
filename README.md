@@ -25,7 +25,7 @@ pip install git+https://github.com/AntreasAntoniou/kubejobs.git
 The `KubernetesJob` class helps you create a Kubernetes Job, generate its YAML configuration, and run the job. Kubernetes Jobs are useful for running short-lived, one-off tasks in your cluster.
 
 ```python
-from kubejobs import KubernetesJob
+from kubejobs.jobs import KubernetesJob
 
 # Create a Kubernetes Job with a name, container image, and command
 job = KubernetesJob(
@@ -47,7 +47,7 @@ The create_jobs_for_experiments function allows you to create and run a series o
 
 
 ```python
-from kubejobs import create_jobs_for_experiments
+from kubejobs.jobs import create_jobs_for_experiments
 
 # List of commands to run as separate Kubernetes Jobs
 commands = [
@@ -71,7 +71,7 @@ create_jobs_for_experiments(
 The create_pvc function helps you create a Persistent Volume Claim (PVC) in your Kubernetes cluster. PVCs are used to request storage resources from your cluster, allowing your applications to store and retrieve data.
 
 ```python
-from kubejobs import create_pvc
+from kubejobs.jobs import create_pvc
 
 # Create a PVC with a name, storage size, and access mode
 create_pvc("my-pvc", "5Ti", access_modes=["ReadWriteOnce"])
@@ -82,7 +82,7 @@ create_pvc("my-pvc", "5Ti", access_modes=["ReadWriteOnce"])
 The create_pv function helps you create a Persistent Volume (PV) in your Kubernetes cluster. PVs represent physical storage resources in a cluster, which can be consumed by PVCs. This allows you to manage storage resources independently from applications that use them.
 
 ```python
-from kubejobs import create_pv
+from kubejobs.jobs import create_pv
 
 # Create a PV with a name, storage size, storage class, access mode, and other properties
 create_pv(

@@ -1,8 +1,9 @@
 import json
-import re
 import subprocess
 
 import yaml
+from rich.console import Console
+from rich.table import Table
 
 
 def get_gpu_usage():
@@ -18,19 +19,16 @@ def get_gpu_usage():
         pod_name = item["metadata"]["name"]
         user_name = pod_name
 
-        pod_info = json.loads(
-            subprocess.check_output(
-                ["kubectl", "get", "pods", pod_name, "-o", "json"]
-            )
-        )
-        for container in pod_info["spec"]["containers"]:
+        for container in item["spec"]["containers"]:
             gpu_request = (
                 container["resources"]
                 .get("requests", {})
                 .get("nvidia.com/gpu")
             )
-            gpu_model = pod_info["spec"]["nodeSelector"].get(
-                "nvidia.com/gpu.product"
+            gpu_model = (
+                item["spec"]
+                .get("nodeSelector", {})
+                .get("nvidia.com/gpu.product")
             )
 
             if gpu_model and gpu_request:
@@ -45,13 +43,26 @@ def get_gpu_usage():
     return gpu_usage, user_gpu_usage
 
 
-def dict_to_yaml(dictionary):
-    return yaml.dump(dictionary, default_flow_style=False)
+def print_table(title, data, gpu_model_keys):
+    console = Console()
+
+    table = Table(show_header=True, header_style="bold magenta")
+
+    table.add_column("Pod Name")
+    for gpu_model in gpu_model_keys:
+        table.add_column(gpu_model)
+
+    for key, value in data.items():
+        row = [key]
+        for gpu_model in gpu_model_keys:
+            row.append(str(value.get(gpu_model, 0)))
+        table.add_row(*row)
+
+    console.print(title)
+    console.print(table)
 
 
 gpu_usage, user_gpu_usage = get_gpu_usage()
+gpu_models = list(gpu_usage.keys())
 
-print("Overall GPU Usage:")
-print(dict_to_yaml(gpu_usage))
-print("\nUser Specific GPU Usage:")
-print(dict_to_yaml(user_gpu_usage))
+print_table("Pod Specific GPU Usage:", user_gpu_usage, gpu_models)

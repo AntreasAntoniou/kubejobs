@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 import random
 import sys
 import time
@@ -99,7 +100,7 @@ def launch_jobs(
                 "gate-disk": {"pvc": pvc_name, "mountPath": "/data/"}
             },
             env_vars=env_vars,
-            job_deadlineseconds=7200,
+            job_deadlineseconds=None,
             ram_request="80G",
             cpu_request=16,
         )
@@ -128,30 +129,27 @@ def main(
         sys.exit(1)
 
     experiments = parse_commands_input(input_data)
-    gpu_types_to_use = set(list(GPU_DETAIL_DICT.keys())[:2])
+    gpu_types_to_use = set(list(GPU_DETAIL_DICT.keys())[:1])
 
     ENV_VARS = {
-        "NEPTUNE_API_TOKEN": "eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLm5lcHR1bmUuYWkiLCJhcGlfdXJsIjoiaHR0cHM6Ly9hcHAubmVwdHVuZS5haSIsImFwaV9rZXkiOiJkOTFjMTY5Zi03ZGUwLTQ4ODYtYWI0Zi1kZDEzNjlkMGI5ZjQifQ==",
-        "NEPTUNE_PROJECT": "MachineLearningBrewery/gate-exp-0-8-6",
-        "NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE": "TRUE",
-        "WANDB_API_KEY": "821661c6ee1657a2717093701ab76574ae1a9be0",
-        "WANDB_ENTITY": "machinelearningbrewery",
-        "WANDB_PROJECT": "gate-0-8-12",
-        "KAGGLE_USERNAME": "antreasantoniou",
-        "KAGGLE_KEY": "d14aab63e71334cfa118bd5251bf85da",
-        "PYTEST_DIR": "/data/",
-        "EXPERIMENT_NAME": "gate-0-9-0-exp",
-        "HF_USERNAME": "Antreas",
-        "HF_TOKEN": "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",
-        "HF_CACHE_DIR": "/data/",
-        "TOKENIZERS_PARALLELISM": "false",
-        "CODE_DIR": "/app/",
-        "PROJECT_DIR": "/app/",
-        "EXPERIMENT_NAME_PREFIX": "gate-0-8-12",
-        "EXPERIMENTS_DIR": "/data/experiments/",
-        "EXPERIMENT_DIR": "/data/experiments/",
-        "DATASET_DIR": "/data/",
-        "MODEL_DIR": "/data/model/",
+        "WANDB_API_KEY": os.getenv("WANDB_API_KEY"),
+        "WANDB_ENTITY": os.getenv("WANDB_ENTITY"),
+        "WANDB_PROJECT": os.getenv("WANDB_PROJECT"),
+        "KAGGLE_USERNAME": os.getenv("KAGGLE_USERNAME"),
+        "KAGGLE_KEY": os.getenv("KAGGLE_KEY"),
+        "PYTEST_DIR": os.getenv("PYTEST_DIR"),
+        "EXPERIMENT_NAME": os.getenv("EXPERIMENT_NAME"),
+        "HF_USERNAME": os.getenv("HF_USERNAME"),
+        "HF_TOKEN": os.getenv("HF_TOKEN"),
+        "HF_CACHE_DIR": os.getenv("HF_CACHE_DIR"),
+        "TOKENIZERS_PARALLELISM": os.getenv("TOKENIZERS_PARALLELISM"),
+        "CODE_DIR": os.getenv("CODE_DIR"),
+        "PROJECT_DIR": os.getenv("PROJECT_DIR"),
+        "EXPERIMENT_NAME_PREFIX": os.getenv("EXPERIMENT_NAME_PREFIX"),
+        "EXPERIMENTS_DIR": os.getenv("EXPERIMENTS_DIR"),
+        "EXPERIMENT_DIR": os.getenv("EXPERIMENT_DIR"),
+        "DATASET_DIR": os.getenv("DATASET_DIR"),
+        "MODEL_DIR": os.getenv("MODEL_DIR"),
     }
 
     launch_jobs(

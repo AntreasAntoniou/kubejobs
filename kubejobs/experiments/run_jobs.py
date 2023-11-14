@@ -49,27 +49,7 @@ def get_gpu_type_to_use():
 
 
 env_vars = {
-    "NEPTUNE_API_TOKEN": "eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLm5lcHR1bmUuYWkiLCJhcGlfdXJsIjoiaHR0cHM6Ly9hcHAubmVwdHVuZS5haSIsImFwaV9rZXkiOiJkOTFjMTY5Zi03ZGUwLTQ4ODYtYWI0Zi1kZDEzNjlkMGI5ZjQifQ==",
-    "NEPTUNE_PROJECT": "MachineLearningBrewery/gate-exp-0-8-6",
-    "NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE": "TRUE",
-    "WANDB_API_KEY": "821661c6ee1657a2717093701ab76574ae1a9be0",
-    "WANDB_ENTITY": "machinelearningbrewery",
-    "WANDB_PROJECT": "gate-0-8-12",
-    "KAGGLE_USERNAME": "antreasantoniou",
-    "KAGGLE_KEY": "d14aab63e71334cfa118bd5251bf85da",
-    "PYTEST_DIR": "/data/",
-    "EXPERIMENT_NAME": "gate-0-8-12",
-    "HF_USERNAME": "Antreas",
-    "HF_TOKEN": "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",
-    "HF_CACHE_DIR": "/data/",
-    "TOKENIZERS_PARALLELISM": "false",
-    "CODE_DIR": "/app/",
-    "PROJECT_DIR": "/app/",
-    "EXPERIMENT_NAME_PREFIX": "gate-0-8-12",
-    "EXPERIMENTS_DIR": "/data/experiments/",
-    "EXPERIMENT_DIR": "/data/experiments/",
-    "DATASET_DIR": "/data/",
-    "MODEL_DIR": "/data/model/",
+    
 }
 
 

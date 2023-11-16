@@ -12,7 +12,7 @@
 - **Visualized Data:** Track Kubernetes job and pod information via a Streamlit-powered web interface. 🖥️
 
 
-Kubejobs is A Python package for creating and running Kubernetes Jobs, Persistent Volumes (PVs), and Persistent Volume Claims (PVCs). This package simplifies the process of deploying and managing jobs, PVs, and PVCs on Kubernetes, making it easier for users without Kubernetes experience to get started.
+**Kubejobs** is a Python package for creating and running Kubernetes Jobs, Persistent Volumes (PVs), and Persistent Volume Claims (PVCs). This package simplifies the process of deploying and managing jobs, PVs, and PVCs on Kubernetes, making it easier for users without Kubernetes experience to get started.
 
 ## Features
 

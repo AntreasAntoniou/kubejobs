@@ -1,168 +1,167 @@
-# Example usage:
+import json
 import logging
+import os
 import random
+import sys
 import time
 from collections import defaultdict
+from typing import Any, Dict, List, Optional, Union
 
-from gate.menu.builder import run_experiments
-from rich import print
+import fire
 from rich.logging import RichHandler
-from tqdm.auto import tqdm
 
 from kubejobs.experiments.pvc_status import PVCStatus, get_pvc_status
-from kubejobs.jobs import (
-    KubernetesJob,
-    create_jobs_for_experiments,
-    create_pvc,
-)
+from kubejobs.jobs import KubernetesJob, create_pvc
 from kubejobs.useful_single_liners.count_gpu_usage_general import (
+    GPU_DETAIL_DICT,
     count_gpu_usage,
 )
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("kubejobs")
 logger.setLevel(logging.INFO)
 handler = RichHandler(markup=True)
 handler.setFormatter(logging.Formatter("%(message)s"))
 logger.addHandler(handler)
 
-gpu_type_to_max_count = {
-    "NVIDIA-A100-SXM4-80GB": 32,
-    "NVIDIA-A100-SXM4-40GB": 88,
-}
 
-
-def get_gpu_type_to_use():
-    active_gpus = count_gpu_usage()["Informatics Allowance Available"]
-    available_gpu_types = []
-
-    for key, value in active_gpus.items():
-        if key in gpu_type_to_max_count:
-            remaining_gpu_count = gpu_type_to_max_count[key] - value
-            if remaining_gpu_count > 0:
-                available_gpu_types.append(key)
-
-    return (
-        random.choice(available_gpu_types)
-        if len(available_gpu_types) > 0
-        else None
+def get_gpu_type_to_use(gpu_types_to_use: List[str]) -> Optional[str]:
+    available_gpus = count_gpu_usage().get(
+        "Informatics Allowance Available", {}
     )
+    available_gpu_types = [
+        gpu_type
+        for gpu_type in gpu_types_to_use
+        if available_gpus.get(gpu_type, 0) > 0
+    ]
+    return random.choice(available_gpu_types) if available_gpu_types else None
 
 
-env_vars = {
-    
-}
+def setup_pvcs(num_pvcs: int, pvc_storage: str, pvc_access_modes: str) -> None:
+    for i in range(num_pvcs):
+        pvc_name = f"gate-pvc-{i}"
+        create_pvc(
+            pvc_name, storage=pvc_storage, access_modes=pvc_access_modes
+        )
 
 
-pvc_dict = get_pvc_status()
+def parse_commands_input(input_data: str) -> Dict[str, Any]:
+    try:
+        # Attempt to parse the input as JSON
+        data = json.loads(input_data)
+        if isinstance(data, dict):
+            # If it's a dictionary, use it as-is
+            return data
+        elif isinstance(data, list):
+            # If it's a list, generate a dictionary with auto-generated names
+            return {f"exp-{i+1:03d}": cmd for i, cmd in enumerate(data)}
+    except json.JSONDecodeError:
+        # If JSON parsing fails, treat the input as a newline-separated list of commands
+        return {
+            f"exp-{i+1:03d}": cmd
+            for i, cmd in enumerate(input_data.strip().split("\n"))
+        }
 
 
-experiment_dict = run_experiments(
-    prefix="systest2",
-    experiment_type="all",
-    accelerate_launch_path="/opt/conda/envs/main/bin/accelerate-launch",
-    gate_run_path="/app/gate/run.py",
-    seed_list=[7],
-    print_commands=True,
-    train_iters=75,
-    evaluate_every_n_steps=25,
-)
+def launch_jobs(
+    experiments: Dict[str, str],
+    num_pvcs: int,
+    max_concurrent_jobs: int,
+    pvc_storage: str,
+    pvc_access_modes: str,
+    gpu_types_to_use: List[str],
+    env_vars: Optional[Dict[str, str]] = None,
+) -> None:
+    pvc_usage = defaultdict(int)
+    setup_pvcs(num_pvcs, pvc_storage, pvc_access_modes)
+    pvc_status = get_pvc_status()
 
+    for exp_name, command in experiments.items():
+        while len(pvc_status.in_use) >= max_concurrent_jobs:
+            logger.info(
+                "Maximum number of concurrent jobs reached, waiting..."
+            )
+            time.sleep(5)
+            pvc_status = get_pvc_status()
 
-# A summary of the GPU setup is:
-
-# * 32 full Nvidia A100 80 GB GPUs
-# * 88 full Nvidia A100 40 GB GPUs
-# * 14 MIG Nvidia A100 40 GB GPUs equating to 28 Nvidia A100 3G.20GB GPUs
-# * 20 MIG Nvidia A100 40 GB GPU equating to 140 A100 1G.5GB GPUs
-
-# Total A100s in varying configurations: 136.
-
-# Initialize a dictionary to keep track of PVC usage
-pvc_usage = defaultdict(int)
-
-total_pvc_count = 50
-
-experiment_dict = list(experiment_dict.items())
-# Shuffle the list
-random.shuffle(experiment_dict)
-
-# Create a new dictionary from the shuffled list
-experiment_dict = dict(experiment_dict)
-
-# experiment_dict = {
-#     key: value for key, value in experiment_dict.items() if "winogr" not in key
-# }
-
-
-print(
-    f"Total number of commands: {len(experiment_dict)}, each needs 1 GPU hour, so total GPU hours: {len(experiment_dict)}"
-)
-
-for i in range(total_pvc_count):
-    pvc_name = f"gate-pvc-{i}"
-    pvc_name = create_pvc(
-        pvc_name=pvc_name, storage="4Ti", access_modes="ReadWriteOnce"
-    )
-job_succesfully_launched = False
-idx = 0
-experiment_list = list(experiment_dict.items())
-while idx < len(experiment_dict.items()):
-    pvc_dict: PVCStatus = get_pvc_status()
-    while len(pvc_dict.available) == 0:
-        pvc_dict: PVCStatus = get_pvc_status()
-        time.sleep(2)
-
-    # Select the PVC that has been used the least number of times
-    pvc_name = min(pvc_dict.available, key=lambda pvc: pvc_usage[pvc])
-    pvc_dict.available.remove(pvc_name)
-    pvc_dict.in_use.append(pvc_name)
-
-    # Increment the usage count for the selected PVC
-    pvc_usage[pvc_name] += 1
-    gpu_type = None
-    while gpu_type is None:
-        gpu_type = get_gpu_type_to_use()
-        job_succesfully_launched = False
-
-    while not job_succesfully_launched:
-        name, command = experiment_list[idx]
-
-        # if "fs" in name:
-        #     gpu_type = "NVIDIA-A100-SXM4-80GB"
+        pvc_name = min(pvc_status.available, key=lambda p: pvc_usage[p])
+        pvc_usage[pvc_name] += 1
+        gpu_type = get_gpu_type_to_use(gpu_types_to_use)
 
         job = KubernetesJob(
-            name=f"{name}".lower(),
+            name=exp_name.lower(),
             image="ghcr.io/antreasantoniou/gate:latest",
             command=["/bin/bash", "-c", "--"],
-            args=[f"{command}"],
+            args=[command],
             gpu_type="nvidia.com/gpu",
             gpu_product=gpu_type,
             gpu_limit=1,
             backoff_limit=4,
             volume_mounts={
-                "gate-disk": {
-                    "pvc": pvc_name,
-                    "mountPath": "/data/",
-                },
+                "gate-disk": {"pvc": pvc_name, "mountPath": "/data/"}
             },
             env_vars=env_vars,
-            job_deadlineseconds=3600 * 2 * 1,
+            job_deadlineseconds=None,
             ram_request="80G",
             cpu_request=16,
         )
 
-        job_yaml = job.generate_yaml()
-        print(
-            f"Attemping to launch job {name} on {gpu_type} with PVC {pvc_name}"
-        )
-        result = 1
         try:
-            result = job.run()
-            job_succesfully_launched = result == 0
+            job_success = job.run() == 0
+            logger.info(
+                f"Launched job '{exp_name}' on '{gpu_type}' with PVC '{pvc_name}'. Success: {job_success}"
+            )
         except Exception as e:
-            logger.info(f"Job {name} failed with error: {e}")
-            print(f"Job {name} failed with error: {e}")
-        idx += 1
-        print(f"Result: {result}")
+            logger.error(f"Job '{exp_name}' failed with error: {e}")
 
-    # time.sleep(2)
+        time.sleep(2)
+
+
+def main(
+    num_pvcs: int = 50,
+    max_concurrent_jobs: int = 10,
+    pvc_storage: str = "4Ti",
+    pvc_access_modes: str = "ReadWriteOnce",
+    env_vars: Optional[Dict[str, str]] = None,
+) -> None:
+    input_data = sys.stdin.read() if not sys.stdin.isatty() else None
+    if not input_data:
+        logger.error("No commands provided to run.")
+        sys.exit(1)
+
+    experiments = parse_commands_input(input_data)
+    gpu_types_to_use = set(list(GPU_DETAIL_DICT.keys())[:1])
+
+    ENV_VARS = {
+        "WANDB_API_KEY": os.getenv("WANDB_API_KEY"),
+        "WANDB_ENTITY": os.getenv("WANDB_ENTITY"),
+        "WANDB_PROJECT": os.getenv("WANDB_PROJECT"),
+        "KAGGLE_USERNAME": os.getenv("KAGGLE_USERNAME"),
+        "KAGGLE_KEY": os.getenv("KAGGLE_KEY"),
+        "PYTEST_DIR": os.getenv("PYTEST_DIR"),
+        "EXPERIMENT_NAME": os.getenv("EXPERIMENT_NAME"),
+        "HF_USERNAME": os.getenv("HF_USERNAME"),
+        "HF_TOKEN": os.getenv("HF_TOKEN"),
+        "HF_CACHE_DIR": os.getenv("HF_CACHE_DIR"),
+        "TOKENIZERS_PARALLELISM": os.getenv("TOKENIZERS_PARALLELISM"),
+        "CODE_DIR": os.getenv("CODE_DIR"),
+        "PROJECT_DIR": os.getenv("PROJECT_DIR"),
+        "EXPERIMENT_NAME_PREFIX": os.getenv("EXPERIMENT_NAME_PREFIX"),
+        "EXPERIMENTS_DIR": os.getenv("EXPERIMENTS_DIR"),
+        "EXPERIMENT_DIR": os.getenv("EXPERIMENT_DIR"),
+        "DATASET_DIR": os.getenv("DATASET_DIR"),
+        "MODEL_DIR": os.getenv("MODEL_DIR"),
+    }
+
+    launch_jobs(
+        experiments=experiments,
+        num_pvcs=num_pvcs,
+        max_concurrent_jobs=max_concurrent_jobs,
+        pvc_storage=pvc_storage,
+        pvc_access_modes=pvc_access_modes,
+        gpu_types_to_use=gpu_types_to_use,
+        env_vars=env_vars or ENV_VARS,
+    )
+
+
+if __name__ == "__main__":
+    fire.Fire(main)

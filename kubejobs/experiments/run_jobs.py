@@ -63,6 +63,7 @@ def parse_commands_input(input_data: str) -> Dict[str, Any]:
 
 
 def launch_jobs(
+    pvc_prefix: str,
     experiments: Dict[str, str],
     num_pvcs: int,
     max_concurrent_jobs: int,
@@ -73,7 +74,7 @@ def launch_jobs(
 ) -> None:
     pvc_usage = defaultdict(int)
     setup_pvcs(num_pvcs, pvc_storage, pvc_access_modes)
-    pvc_status = get_pvc_status()
+    pvc_status = get_pvc_status(pvc_prefix)
 
     for exp_name, command in experiments.items():
         while len(pvc_status.in_use) >= max_concurrent_jobs:
@@ -81,7 +82,7 @@ def launch_jobs(
                 "Maximum number of concurrent jobs reached, waiting..."
             )
             time.sleep(5)
-            pvc_status = get_pvc_status()
+            pvc_status = get_pvc_status(pvc_prefix)
 
         pvc_name = min(pvc_status.available, key=lambda p: pvc_usage[p])
         pvc_usage[pvc_name] += 1
@@ -122,6 +123,7 @@ def main(
     pvc_storage: str = "4Ti",
     pvc_access_modes: str = "ReadWriteOnce",
     env_vars: Optional[Dict[str, str]] = None,
+    pvc_prefix: str = os.getenv("USER", "my-kube-project"),
 ) -> None:
     input_data = sys.stdin.read() if not sys.stdin.isatty() else None
     if not input_data:
@@ -160,6 +162,7 @@ def main(
         pvc_access_modes=pvc_access_modes,
         gpu_types_to_use=gpu_types_to_use,
         env_vars=env_vars or ENV_VARS,
+        pvc_prefix=pvc_prefix,
     )
 
 

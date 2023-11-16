@@ -1,4 +1,3 @@
-from pkg_resources import require
 from setuptools import find_packages, setup
 
 requirements = ["fire", "PyYAML", "kubernetes", "rich"]
@@ -14,10 +13,16 @@ dev_requirements = [
     "sphinx-material",
 ]
 
+# Read the contents of your README file
+with open("README.md", "r", encoding="utf-8") as f:
+    long_description = f.read()
+
 setup(
     name="kubejobs",
     version="0.3.1",
     description="A Python library for creating and running Kubernetes Jobs",
+    long_description=long_description,
+    long_description_content_type="text/markdown",  # This is important!
     author="Antreas Antoniou",
     author_email="iam@antreas.io",
     url="https://github.com/AntreasAntoniou/kubejobs",

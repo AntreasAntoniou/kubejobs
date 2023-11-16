@@ -26,7 +26,7 @@
 Install KubeJobs using pip:
 
 ```
-pip install git+https://github.com/AntreasAntoniou/kubejobs.git
+pip install kubejobs
 ```
 
 ## Usage

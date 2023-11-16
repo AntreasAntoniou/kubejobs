@@ -1,5 +1,3 @@
-# KubeJobs
-
 # KubeJobs: Pythonic Kubernetes for MLOps and ML Research 🚀
 
 **Are you...**

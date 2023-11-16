@@ -1,7 +1,20 @@
 # KubeJobs
 
-A Python package for creating and running Kubernetes Jobs, Persistent Volumes (PVs), and Persistent Volume Claims (PVCs). This package simplifies the process of deploying and managing jobs, PVs, and PVCs on Kubernetes, making it easier for users without Kubernetes experience to get started.
+# KubeJobs: Pythonic Kubernetes for MLOps and ML Research 🚀
 
+**Are you...**
+- Engaged in MLOps or ML research? :mag:
+- Frustrated by YAML and kubectl complexities? :triumph:
+- Wishing for a Python-Kubernetes blend in your ML pipelines? :sparkling_heart:
+
+**Discover KubeJobs:**
+- **Python-Powered Kubernetes:** Write Kubernetes operations in Python, get rid of YAML files. 🎉
+- **MLOps Made Magical:** Manage Kubernetes Jobs, PVs, PVCs effortlessly, tailored for ML workflows. 🪄
+- **Research Reading, Writing Kubernetes:** Set up and run multiple jobs for varied experiment parameters systematically. 📚
+- **Visualized Data:** Track Kubernetes job and pod information via a Streamlit-powered web interface. 🖥️
+
+
+Kubejobs is A Python package for creating and running Kubernetes Jobs, Persistent Volumes (PVs), and Persistent Volume Claims (PVCs). This package simplifies the process of deploying and managing jobs, PVs, and PVCs on Kubernetes, making it easier for users without Kubernetes experience to get started.
 
 ## Features
 

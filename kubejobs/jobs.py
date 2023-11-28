@@ -2,6 +2,7 @@ import datetime
 import logging
 import os
 import subprocess
+import traceback
 from typing import List, Optional
 
 import fire
@@ -36,7 +37,7 @@ def fetch_user_info():
     user_info = {}
 
     # Get the current user name
-    user_info["username"] = os.getlogin()
+    user_info["login_user"] = os.getlogin()
 
     # Get user entry from /etc/passwd
     pw_entry = pwd.getpwnam(os.getlogin())
@@ -113,9 +114,13 @@ class KubernetesJob:
         volume_mounts: Optional[dict] = None,
         job_deadlineseconds: Optional[int] = None,
         privileged_security_context: bool = False,
+        user_name: Optional[str] = None,
+        user_email: Optional[str] = None,
+        labels: Optional[dict] = None,
+        annotations: Optional[dict] = None,
     ):
         self.name = name
-        self.metadata = fetch_user_info()
+
         self.image = image
         self.command = command
         self.args = args
@@ -142,8 +147,10 @@ class KubernetesJob:
         self.backoff_limit = backoff_limit
         self.restart_policy = restart_policy
         self.shm_size = (
-            ram_request
-            if ram_request
+            shm_size
+            if shm_size is not None
+            else ram_request
+            if ram_request is not None
             else f"{MAX_RAM // (MAX_GPU - gpu_limit + 1)}G"
         )
         self.secret_env_vars = secret_env_vars
@@ -151,6 +158,26 @@ class KubernetesJob:
         self.volume_mounts = volume_mounts
         self.job_deadlineseconds = job_deadlineseconds
         self.privileged_security_context = privileged_security_context
+
+        self.user_name = user_name or os.environ.get("USER", "unknown")
+        self.user_email = user_email  # This is now a required field.
+
+        self.labels = {"eidf/user": self.user_name}
+
+        if labels is not None:
+            self.labels.update(labels)
+
+        self.annotations = {"eidf/user": self.user_name}
+        if user_email is not None:
+            self.annotations["eidf/email"] = user_email
+
+        if annotations is not None:
+            self.annotations.update(annotations)
+
+        self.user_info = fetch_user_info()
+        self.annotations.update(self.user_info)
+        print(f"labels {self.labels}")
+        print(f"annotations {self.annotations}")
 
     def _add_shm_size(self, container: dict):
         """Adds shared memory volume if shm_size is set."""
@@ -270,17 +297,25 @@ class KubernetesJob:
                 f"{self.gpu_type}"
             ] = self.gpu_limit
 
+        #  # Incorporate the user labels into the Job's Pod template metadata directly
+        # job['spec']['template']['metadata']['labels'] = self.labels
+
+        # # Incorporate the user annotations into the Job's Pod template metadata directly
+        # job['spec']['template']['metadata']['annotations'] = self.annotations
+
         job = {
             "apiVersion": "batch/v1",
             "kind": "Job",
             "metadata": {
                 "name": self.name,
-                "annotations": self.metadata,  # Add metadata here
+                "labels": self.labels,  # Add labels here
+                "annotations": self.annotations,  # Add metadata here
             },
             "spec": {
                 "template": {
                     "metadata": {
-                        "annotations": self.metadata  # Add metadata to Pod template as well
+                        "labels": self.labels,  # Add labels to Pod template as well
+                        "annotations": self.annotations,  # Add metadata to Pod template as well
                     },
                     "spec": {
                         "containers": [container],
@@ -342,7 +377,7 @@ class KubernetesJob:
             temp_file.write(job_yaml)
 
         # Run the kubectl command with --validate=False
-        cmd = ["kubectl", "apply", "-f", "temp_job.yaml", "--validate=False"]
+        cmd = ["kubectl", "apply", "-f", "temp_job.yaml"]
         result = 1
         try:
             result = subprocess.run(
@@ -356,7 +391,7 @@ class KubernetesJob:
             os.remove("temp_job.yaml")
             return result.returncode
         except Exception as e:
-            logger.info(f"Command failed with return code {e}")
+            logger.info(f"Command failed with return code {e}. ")
             # Remove the temporary file
             os.remove("temp_job.yaml")
             return result

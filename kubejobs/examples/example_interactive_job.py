@@ -20,18 +20,19 @@ create_pvc(
 )
 
 job = KubernetesJob(
-    name=f"gate-node-{unique_id}",
+    name=f"debug-kubejobs-{unique_id}",
     image="ghcr.io/antreasantoniou/gate:latest",
     command=["/bin/bash", "-c", "--"],
     args=["while true; do sleep 60; done;"],
     gpu_type="nvidia.com/gpu",
     gpu_product="NVIDIA-A100-SXM4-40GB",
     gpu_limit=1,
-    shm_size="100G",  # "200G" is the maximum value for shm_size
+    shm_size="111G",  # "200G" is the maximum value for shm_size
     backoff_limit=4,
     cpu_request=192 // 8,
     ram_request=f"{890 // 8}G",
     env_vars=env_vars,
+    user_email="a.antoniou@ed.ac.uk",
     # volume_mounts={
     #     "dataset-disk": {
     #         "pvc": "my-data-pvc-0",

@@ -1,14 +1,13 @@
 import datetime
+import json
 import logging
 import os
 import subprocess
-import traceback
 from typing import List, Optional
 
 import fire
 import yaml
 from kubernetes import client, config
-from rich import print
 from rich.logging import RichHandler
 
 logger = logging.getLogger(__name__)
@@ -176,8 +175,8 @@ class KubernetesJob:
 
         self.user_info = fetch_user_info()
         self.annotations.update(self.user_info)
-        print(f"labels {self.labels}")
-        print(f"annotations {self.annotations}")
+        logger.info(f"labels {self.labels}")
+        logger.info(f"annotations {self.annotations}")
 
     def _add_shm_size(self, container: dict):
         """Adds shared memory volume if shm_size is set."""
@@ -297,12 +296,6 @@ class KubernetesJob:
                 f"{self.gpu_type}"
             ] = self.gpu_limit
 
-        #  # Incorporate the user labels into the Job's Pod template metadata directly
-        # job['spec']['template']['metadata']['labels'] = self.labels
-
-        # # Incorporate the user annotations into the Job's Pod template metadata directly
-        # job['spec']['template']['metadata']['annotations'] = self.annotations
-
         job = {
             "apiVersion": "batch/v1",
             "kind": "Job",
@@ -392,6 +385,8 @@ class KubernetesJob:
             return result.returncode
         except Exception as e:
             logger.info(f"Command failed with return code {e}. ")
+            logger.info(f"Stdout: {result.stdout}")
+            logger.info(f"Stderr: {result.stderr}")
             # Remove the temporary file
             os.remove("temp_job.yaml")
             return result
@@ -399,7 +394,9 @@ class KubernetesJob:
     @classmethod
     def from_command_line(cls):
         """Create a KubernetesJob instance from command-line arguments
-        and run the job."""
+        and run the job.
+        Example: python kubejobs/jobs.py --image=nvcr.io/nvidia/cuda:11.8.0-cudnn8-devel-ubuntu20.04 --gpu_type=nvidia.com/gpu --gpu_limit=1 --backoff_limit=4 --gpu_product=NVIDIA-A100-SXM4-40GB
+        """
         fire.Fire(cls)
 
 
@@ -445,10 +442,6 @@ def create_jobs_for_experiments(commands: List[str], *args, **kwargs):
         jobs.append(kubernetes_job)
 
     return jobs
-
-
-import json
-import subprocess
 
 
 def create_pvc(
@@ -548,7 +541,7 @@ def create_pv(
     if pv_type == "local":
         pv["spec"]["hostPath"] = {"path": local_path}
 
-    print(pv)
+    logger.info(pv)
     config.load_kube_config()
     core_api = client.CoreV1Api()
     core_api.create_persistent_volume(body=pv)

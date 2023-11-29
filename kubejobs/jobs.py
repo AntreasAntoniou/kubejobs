@@ -1,7 +1,9 @@
 import datetime
+import grp
 import json
 import logging
 import os
+import pwd
 import subprocess
 from typing import List, Optional
 
@@ -26,10 +28,6 @@ MAX_GPU = 8
 # * 88 full Nvidia A100 40 GB GPUs
 # * 14 MIG Nvidia A100 40 GB GPUs equating to 28 Nvidia A100 3G.20GB GPUs
 # * 20 MIG Nvidia A100 40 GB GPU equating to 140 A100 1G.5GB GPUs
-
-import grp
-import os
-import pwd
 
 
 def fetch_user_info():
@@ -181,8 +179,6 @@ class KubernetesJob:
     def _add_shm_size(self, container: dict):
         """Adds shared memory volume if shm_size is set."""
         if self.shm_size:
-            # container["resources"]["limits"]["memory"] = self.shm_size
-            # container["resources"]["requests"] = {"memory": self.shm_size}
             container["volumeMounts"].append(
                 {"name": "dshm", "mountPath": "/dev/shm"}
             )

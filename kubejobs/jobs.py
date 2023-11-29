@@ -371,7 +371,7 @@ class KubernetesJob:
 
         # Run the kubectl command with --validate=False
         cmd = ["kubectl", "apply", "-f", "temp_job.yaml"]
-        result = 1
+
         try:
             result = subprocess.run(
                 cmd,
@@ -383,13 +383,22 @@ class KubernetesJob:
             # Remove the temporary file
             os.remove("temp_job.yaml")
             return result.returncode
-        except Exception as e:
-            logger.info(f"Command failed with return code {e}. ")
-            logger.info(f"Stdout: {result.stdout}")
-            logger.info(f"Stderr: {result.stderr}")
+        except subprocess.CalledProcessError as e:
+            logger.info(
+                f"Command '{' '.join(cmd)}' failed with return code {e.returncode}."
+            )
+            logger.info(f"Stdout:\n{e.stdout}")
+            logger.info(f"Stderr:\n{e.stderr}")
             # Remove the temporary file
             os.remove("temp_job.yaml")
-            return result
+            return e.returncode  # return the exit code
+        except Exception as e:
+            logger.exception(
+                f"An unexpected error occurred while running '{' '.join(cmd)}'."
+            )  # This logs the traceback too
+            # Remove the temporary file
+            os.remove("temp_job.yaml")
+            return 1  # return the exit code
 
     @classmethod
     def from_command_line(cls):

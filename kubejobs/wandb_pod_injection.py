@@ -1,27 +1,26 @@
 import json
 import os
 import subprocess
-import tempfile
 import time
-from collections import defaultdict
 from datetime import datetime, timezone
 
 import fire
-import numpy as np
-import pandas as pd
-import rich
+from rich import print
 from tqdm.auto import tqdm
 
 
 def run_command(command: str) -> (str, str):
-    result = subprocess.run(
-        command,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-        shell=True,
-    )
-    return result.stdout, result.stderr
+    try:
+        result = subprocess.run(
+            command,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            shell=True,
+        )
+        return result.stdout, result.stderr
+    except subprocess.CalledProcessError as e:
+        return e.stdout, e.stderr
 
 
 def ssh_into_pod_and_run_command(
@@ -29,14 +28,12 @@ def ssh_into_pod_and_run_command(
 ) -> str:
     ssh_command = f"kubectl exec -n {namespace} {pod_name} -- {command}"
     stdout, stderr = run_command(ssh_command)
-    if stderr:
-        print(f"Error executing command in pod {pod_name}: {stderr}")
+    print(f"Stdout from pod {pod_name}: {stdout}, Stderr: {stderr}")
     return stdout
 
 
 def create_and_copy_wandb_script(pod_name, namespace, metadata):
     # Convert the metadata dictionary to a JSON string
-    metadata_json = json.dumps(metadata)
     metadata_filename = f"/tmp/wandb_metadata_{pod_name}.json"
 
     # Create the metadata JSON file locally

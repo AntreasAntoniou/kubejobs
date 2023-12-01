@@ -112,7 +112,8 @@ def fetch_and_render_job_info(namespace="informatics"):
 
             name = metadata.get("name", "N/A")
             namespace = metadata.get("namespace", "N/A")
-            username = metadata.get("annotations", {}).get("username", "N/A")
+            username = metadata.get("labels", {}).get("eidf/user", "N/A")
+            email = metadata.get("annotations", {}).get("eidf/email", "N/A")
 
             uid = metadata.get("uid", "N/A")
             creation_time = parse_iso_time(

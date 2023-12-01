@@ -102,8 +102,6 @@ def launch_jobs(
             },
             env_vars=env_vars,
             job_deadlineseconds=None,
-            ram_request="80G",
-            cpu_request=16,
         )
 
         try:
@@ -119,11 +117,11 @@ def launch_jobs(
 
 def main(
     num_pvcs: int = 50,
-    max_concurrent_jobs: int = 10,
+    max_concurrent_jobs: int = 25,
     pvc_storage: str = "4Ti",
     pvc_access_modes: str = "ReadWriteOnce",
     env_vars: Optional[Dict[str, str]] = None,
-    pvc_prefix: str = os.getenv("USER", "my-kube-project"),
+    pvc_prefix: str = "gate",
 ) -> None:
     input_data = sys.stdin.read() if not sys.stdin.isatty() else None
     if not input_data:
@@ -140,7 +138,6 @@ def main(
         "KAGGLE_USERNAME": os.getenv("KAGGLE_USERNAME"),
         "KAGGLE_KEY": os.getenv("KAGGLE_KEY"),
         "PYTEST_DIR": os.getenv("PYTEST_DIR"),
-        "EXPERIMENT_NAME": os.getenv("EXPERIMENT_NAME"),
         "HF_USERNAME": os.getenv("HF_USERNAME"),
         "HF_TOKEN": os.getenv("HF_TOKEN"),
         "HF_CACHE_DIR": os.getenv("HF_CACHE_DIR"),

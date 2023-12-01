@@ -164,7 +164,8 @@ def fetch_and_render_pod_info(
             namespace = metadata["namespace"]
             uid = metadata["uid"]
 
-            username = metadata.get("annotations", {}).get("username", "N/A")
+            username = metadata.get("labels", {}).get("eidf/user", "N/A")
+            email = metadata.get("annotations", {}).get("eidf/email", "N/A")
 
             pod_status = status["phase"]
             node = spec.get("nodeName", "N/A")
@@ -260,9 +261,7 @@ def fetch_and_render_pod_info(
         df = pd.DataFrame(data, columns=columns)
         # Inside your loop, when you update the DataFrame
 
-        st.dataframe(
-            df
-        )  # This will update the existing table instead of creating a new one
+        st_table.dataframe(df)
 
         if not loop:
             break

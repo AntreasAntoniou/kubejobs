@@ -76,3 +76,6 @@ doc/_build/
 *.egg-info/
 dist/
 build/
+
+# Secrets
+secrets/*

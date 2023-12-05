@@ -3,7 +3,7 @@ import subprocess
 
 import fire
 from rich import print
-from rich.table import StyleType, Table
+from rich.table import Table
 from tqdm.auto import tqdm
 
 

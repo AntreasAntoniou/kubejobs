@@ -19,7 +19,7 @@ with open("README.md", "r", encoding="utf-8") as f:
 
 setup(
     name="kubejobs",
-    version="0.4.1",
+    version="0.4.2",
     description="A Python library for creating and running Kubernetes Jobs",
     long_description=long_description,
     long_description_content_type="text/markdown",  # This is important!

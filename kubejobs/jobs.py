@@ -86,6 +86,7 @@ class KubernetesJob:
         secret_env_vars (dict, optional): Dictionary of secret environment variables. Defaults to None.
         env_vars (dict, optional): Dictionary of normal (non-secret) environment variables. Defaults to None.
         volume_mounts (dict, optional): Dictionary of volume mounts. Defaults to None.
+        namespace (str, optional): Namespace of the job. Defaults to None.
 
     Methods:
         generate_yaml() -> dict: Generate the Kubernetes Job YAML configuration.

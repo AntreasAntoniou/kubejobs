@@ -86,6 +86,7 @@ class KubernetesJob:
         secret_env_vars (dict, optional): Dictionary of secret environment variables. Defaults to None.
         env_vars (dict, optional): Dictionary of normal (non-secret) environment variables. Defaults to None.
         volume_mounts (dict, optional): Dictionary of volume mounts. Defaults to None.
+        namespace (str, optional): Namespace of the job. Defaults to None.
 
     Methods:
         generate_yaml() -> dict: Generate the Kubernetes Job YAML configuration.
@@ -115,6 +116,7 @@ class KubernetesJob:
         user_email: Optional[str] = None,
         labels: Optional[dict] = None,
         annotations: Optional[dict] = None,
+        namespace: Optional[str] = None
     ):
         self.name = name
 
@@ -175,6 +177,8 @@ class KubernetesJob:
         self.annotations.update(self.user_info)
         logger.info(f"labels {self.labels}")
         logger.info(f"annotations {self.annotations}")
+
+        self.namespace = namespace
 
     def _add_shm_size(self, container: dict):
         """Adds shared memory volume if shm_size is set."""
@@ -318,6 +322,9 @@ class KubernetesJob:
 
         if self.job_deadlineseconds:
             job["spec"]["activeDeadlineSeconds"] = self.job_deadlineseconds
+
+        if self.namespace:
+            job["metadata"]["namespace"] = self.namespace
 
         if not (
             self.gpu_type is None

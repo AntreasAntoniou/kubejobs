@@ -8,14 +8,13 @@ from collections import defaultdict
 from typing import Any, Dict, List, Optional, Union
 
 import fire
-from rich.logging import RichHandler
-
-from kubejobs.experiments.pvc_status import PVCStatus, get_pvc_status
+from kubejobs.experiments.pvc_status import get_pvc_status
 from kubejobs.jobs import KubernetesJob, create_pvc
 from kubejobs.useful_single_liners.count_gpu_usage_general import (
     GPU_DETAIL_DICT,
     count_gpu_usage,
 )
+from rich.logging import RichHandler
 
 logger = logging.getLogger("kubejobs")
 logger.setLevel(logging.INFO)
@@ -36,9 +35,17 @@ def get_gpu_type_to_use(gpu_types_to_use: List[str]) -> Optional[str]:
     return random.choice(available_gpu_types) if available_gpu_types else None
 
 
-def setup_pvcs(num_pvcs: int, pvc_storage: str, pvc_access_modes: str) -> None:
+def setup_pvcs(
+    num_pvcs: int,
+    pvc_storage: str,
+    pvc_access_modes: str,
+    pvc_prefix: Optional[str] = None,
+) -> None:
+    if pvc_prefix is None:
+        pvc_prefix = os.environ.get("USER", "mypvc")
+
     for i in range(num_pvcs):
-        pvc_name = f"gate-pvc-{i}"
+        pvc_name = f"{pvc_prefix}-pvc-{i}"
         create_pvc(
             pvc_name, storage=pvc_storage, access_modes=pvc_access_modes
         )
@@ -73,8 +80,13 @@ def launch_jobs(
     env_vars: Optional[Dict[str, str]] = None,
 ) -> None:
     pvc_usage = defaultdict(int)
-    setup_pvcs(num_pvcs, pvc_storage, pvc_access_modes)
-    pvc_status = get_pvc_status(pvc_prefix)
+    setup_pvcs(
+        num_pvcs=num_pvcs,
+        pvc_storage=pvc_storage,
+        pvc_access_modes=pvc_access_modes,
+        pvc_prefix=pvc_prefix,
+    )
+    pvc_status = get_pvc_status(pvc_prefix=pvc_prefix)
 
     for exp_name, command in experiments.items():
         while len(pvc_status.in_use) >= max_concurrent_jobs:
@@ -84,6 +96,7 @@ def launch_jobs(
             time.sleep(5)
             pvc_status = get_pvc_status(pvc_prefix)
 
+        pvc_status = get_pvc_status(pvc_prefix)
         pvc_name = min(pvc_status.available, key=lambda p: pvc_usage[p])
         pvc_usage[pvc_name] += 1
         gpu_type = get_gpu_type_to_use(gpu_types_to_use)
@@ -96,7 +109,7 @@ def launch_jobs(
             gpu_type="nvidia.com/gpu",
             gpu_product=gpu_type,
             gpu_limit=1,
-            backoff_limit=4,
+            backoff_limit=1,
             volume_mounts={
                 "gate-disk": {"pvc": pvc_name, "mountPath": "/data/"}
             },
@@ -128,6 +141,12 @@ def main(
         logger.error("No commands provided to run.")
         sys.exit(1)
 
+    if max_concurrent_jobs > num_pvcs:
+        logger.error(
+            f"Maximum number of concurrent jobs ({max_concurrent_jobs}) cannot be greater than number of PVCs ({num_pvcs})."
+        )
+        sys.exit(1)
+
     experiments = parse_commands_input(input_data)
     gpu_types_to_use = set(list(GPU_DETAIL_DICT.keys())[:1])
 
@@ -153,7 +172,7 @@ def main(
 
     launch_jobs(
         experiments=experiments,
-        num_pvcs=num_pvcs,
+        num_pvcs=min(num_pvcs, len(experiments), max_concurrent_jobs),
         max_concurrent_jobs=max_concurrent_jobs,
         pvc_storage=pvc_storage,
         pvc_access_modes=pvc_access_modes,

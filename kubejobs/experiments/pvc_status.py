@@ -1,3 +1,4 @@
+import json
 import re
 import subprocess
 from dataclasses import dataclass
@@ -13,12 +14,24 @@ class PVCStatus:
 
 
 import json
+import re
+import subprocess
+from typing import Optional
 
 
-def get_pvc_status(unique_identifier: Optional[str] = None) -> PVCStatus:
+class PVCStatus:
+    def __init__(self, available: list, in_use: list):
+        self.available = available
+        self.in_use = in_use
+
+
+def get_pvc_status(pvc_prefix: Optional[str] = None) -> PVCStatus:
     """
     This function returns a PVCStatus object containing the status of Persistent Volume Claims (PVCs) in a Kubernetes cluster.
     The PVCStatus has two attributes: 'available' and 'in-use', each containing a list of PVCs in the respective status.
+
+    Args:
+        unique_identifier (Optional[str]): An optional string to filter PVCs by a unique identifier.
 
     Returns:
         PVCStatus: A PVCStatus object with attributes 'available' and 'in-use', each containing a list of PVCs in the respective status.
@@ -43,25 +56,19 @@ def get_pvc_status(unique_identifier: Optional[str] = None) -> PVCStatus:
         result = subprocess.run(command, capture_output=True, text=True)
         return json.loads(result.stdout)
 
-    # Get all PVCs and Pods
+    # Get all PVCs and Jobs
     pvcs = run_subprocess(
         ["kubectl", "get", "pvc", "-o", "jsonpath={.items[*].metadata.name}"]
     )
-    pods = run_subprocess_json(["kubectl", "get", "pods", "-o", "json"])
+    jobs = run_subprocess_json(["kubectl", "get", "jobs", "-o", "json"])
 
     # Create a dictionary to store PVC usage status
     pvc_usage = {pvc: False for pvc in pvcs}
 
-    # Check each pod for PVC usage
-    for pod in pods["items"]:
-        if pod["status"]["phase"].lower() not in [
-            "running",
-            "containercreating",
-            "pending",
-        ]:
-            continue
-        for volume in pod["spec"].get("volumes", []):
-            pvc = volume.get("persistentVolumeClaim")
+    # Check each job for PVC usage
+    for job in jobs["items"]:
+        for template in job["spec"]["template"]["spec"].get("volumes", []):
+            pvc = template.get("persistentVolumeClaim")
             if pvc:
                 pvc_name = pvc["claimName"]
                 if pvc_name in pvc_usage:
@@ -72,7 +79,7 @@ def get_pvc_status(unique_identifier: Optional[str] = None) -> PVCStatus:
 
     # Populate the pvc_status dictionary
     for pvc, used in sorted(pvc_usage.items(), key=sort_key):
-        if unique_identifier and unique_identifier not in pvc:
+        if pvc_prefix and pvc_prefix not in pvc:
             continue
         if used:
             pvc_status["in-use"].append(pvc)

@@ -1,1 +1,1 @@
-kubectl get pods --field-selector=status.phase=ContainerCreating -o json | kubectl delete -f -
+kubectl get pods --namespace informatics --field-selector=status.phase=Pending -o json | kubectl delete -f -

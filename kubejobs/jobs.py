@@ -173,8 +173,8 @@ class KubernetesJob:
 
         self.user_info = fetch_user_info()
         self.annotations.update(self.user_info)
-        logger.info(f"labels {self.labels}")
-        logger.info(f"annotations {self.annotations}")
+        logger.debug(f"labels {self.labels}")
+        logger.debug(f"annotations {self.annotations}")
 
     def _add_shm_size(self, container: dict):
         """Adds shared memory volume if shm_size is set."""

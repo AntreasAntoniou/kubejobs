@@ -98,6 +98,17 @@ def run_command(command: str) -> str:
 def ssh_into_pod_and_run_command(
     pod_name: str, namespace: str, command: str
 ) -> str:
+    """
+    SSH into a Kubernetes pod and run a command.
+
+    Args:
+        pod_name (str): The name of the pod to SSH into.
+        namespace (str): The namespace of the pod.
+        command (str): The command to run inside the pod.
+
+    Returns:
+        str: The output of the command executed inside the pod.
+    """
     ssh_command = f"kubectl exec -n {namespace} {pod_name} -- {command}"
     stdout, stderr = run_command(ssh_command)
     if stderr:

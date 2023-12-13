@@ -116,7 +116,7 @@ class KubernetesJob:
         user_email: Optional[str] = None,
         labels: Optional[dict] = None,
         annotations: Optional[dict] = None,
-        namespace: Optional[str] = None
+        namespace: Optional[str] = None,
     ):
         self.name = name
 

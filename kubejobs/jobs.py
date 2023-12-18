@@ -126,7 +126,8 @@ class KubernetesJob:
         self.cpu_request = (
             cpu_request
             if cpu_request
-            else MAX_CPU // (MAX_GPU - (1 if gpu_limit is None else gpu_limit) + 1)
+            else MAX_CPU
+            // (MAX_GPU - (1 if gpu_limit is None else gpu_limit) + 1)
         )
         self.ram_request = (
             ram_request

@@ -166,9 +166,9 @@ class KubernetesJob:
 
         self.user_name = user_name or os.environ.get("USER", "unknown")
         self.user_email = user_email  # This is now a required field.
-        self.kubernetes_queue_name = kubernetes_queue_name
+        self.kueue_queue_name = kueue_queue_name
 
-        self.labels = {"eidf/user": self.user_name, "kueue.x-k8s.io/queue-name": self.kubernetes_queue_name}
+        self.labels = {"eidf/user": self.user_name, "kueue.x-k8s.io/queue-name": self.kueue_queue_name}
 
         if labels is not None:
             self.labels.update(labels)

@@ -3,7 +3,7 @@ import time
 
 from rich import print
 
-from kubejobs.jobs import KubernetesJob, create_pvc
+from kubejobs.jobs import KubernetesJob, create_pvc, KubeQueue
 
 env_vars = {
     "DATASET_DIR": "/data/",
@@ -23,6 +23,7 @@ job = KubernetesJob(
     name=f"debug-kubejobs-{unique_id}",
     image="ghcr.io/antreasantoniou/gate:latest",
     command=["/bin/bash", "-c", "--"],
+    kubernetes_queue_name=KubeQueue.INFORMATICS,
     args=["while true; do sleep 60; done;"],
     gpu_type="nvidia.com/gpu",
     gpu_product="NVIDIA-A100-SXM4-40GB",

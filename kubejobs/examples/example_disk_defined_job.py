@@ -1,7 +1,7 @@
 # Example usage:
 import time
 
-from kubejobs.jobs import KubernetesJob
+from kubejobs.jobs import KubernetesJob, create_pvc, KubeQueue
 
 env_vars = {
     "DATASET_DIR": "/data/",
@@ -17,6 +17,7 @@ unique_id = time.strftime("%Y%m%d%H%M%S")
 job = KubernetesJob(
     name=f"gate-dev-{unique_id}",
     image="ghcr.io/antreasantoniou/gate:latest",
+    kubernetes_queue_name=KubeQueue.INFORMATICS,
     command=["/bin/bash", "-c", "--"],
     args=["while true; do sleep 60; done;"],
     gpu_type="nvidia.com/gpu",

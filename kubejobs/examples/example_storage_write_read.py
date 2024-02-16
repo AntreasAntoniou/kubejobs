@@ -1,6 +1,7 @@
 from rich import print
 
 from kubejobs.jobs import KubernetesJob as Job
+from kubejobs.jobs import KubeQueue
 from kubejobs.jobs import create_pvc
 
 # Create PVC if not created
@@ -12,6 +13,7 @@ write_job = Job(
     image="ubuntu:20.04",
     command=["/bin/bash", "-c"],
     args=["echo 'Hello, World!' > /mnt/data/sample.txt"],
+    kubernetes_queue_name=KubeQueue.INFORMATICS,
     volume_mounts={
         "dataset-disk": {
             "pvc": "datasets-pvc-0",
@@ -28,6 +30,7 @@ read_job = Job(
     image="ubuntu:20.04",
     command=["/bin/bash", "-c"],
     args=["cat /mnt/data/sample.txt"],
+    kubernetes_queue_name=KubeQueue.INFORMATICS,
     volume_mounts={
         "dataset-disk": {
             "pvc": "datasets-pvc-0",

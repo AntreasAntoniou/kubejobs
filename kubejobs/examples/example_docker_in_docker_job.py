@@ -2,7 +2,7 @@ import time
 
 from rich import print
 
-from kubejobs.jobs import KubernetesJob
+from kubejobs.jobs import KubernetesJob, create_pvc, KubeQueue
 
 # unique id generated using time
 unique_id = time.strftime("%Y%m%d%H%M%S")
@@ -12,6 +12,7 @@ job = KubernetesJob(
     name=f"dind-{unique_id}",
     image="docker:dind",
     gpu_type="nvidia.com/gpu",
+    kubernetes_queue_name=KubeQueue.INFORMATICS,
     gpu_product="NVIDIA-A100-SXM4-40GB",
     gpu_limit=1,
     shm_size="100G",

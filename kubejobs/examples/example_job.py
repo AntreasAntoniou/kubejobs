@@ -4,7 +4,7 @@ import time
 from kubejobs.jobs import (
     KubernetesJob,
     create_jobs_for_experiments,
-    create_pvc,
+    create_pvc, KubeQueue
 )
 
 # unique id generated using time
@@ -20,6 +20,7 @@ job = KubernetesJob(
     image="nvcr.io/nvidia/cuda:12.0.0-cudnn8-devel-ubuntu22.04",
     command=["/bin/bash"],
     args=["-c", "df -h"],
+    kubernetes_queue_name=KubeQueue.INFORMATICS,
     gpu_type="nvidia.com/gpu",
     gpu_product="NVIDIA-A100-SXM4-80GB",
     gpu_limit=2,

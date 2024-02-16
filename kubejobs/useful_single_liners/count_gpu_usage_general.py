@@ -7,7 +7,6 @@ from rich.console import Console
 from rich.table import Table
 from tqdm.auto import tqdm
 
-
 # GPU details
 GPU_DETAIL_DICT = {
     "NVIDIA-A100-SXM4-80GB": 40,
@@ -93,7 +92,7 @@ def extract_gpu_info(containers):
 
 def count_gpu_usage():
     pod_gpu_info = get_k8s_pods_gpu_info()
-    gpu_usage = {"Available": OrderedDict()}
+    gpu_usage = {}
 
     for pod_name, info in pod_gpu_info.items():
         gpu_model = info["gpu_type"]
@@ -104,13 +103,13 @@ def count_gpu_usage():
 
         if gpu_model and gpu_count:
             if status not in gpu_usage:
-                gpu_usage[status] = OrderedDict()
+                gpu_usage[status] = dict()
             if gpu_model in gpu_usage[status]:
                 gpu_usage[status][gpu_model] += gpu_count
             else:
                 gpu_usage[status][gpu_model] = gpu_count
 
-    gpu_usage["Available"] = {
+    gpu_usage["Free"] = {
         k: v - gpu_usage.get("Running", {}).get(k, 0)
         for k, v in GPU_DETAIL_DICT.items()
     }
@@ -120,7 +119,7 @@ def count_gpu_usage():
             for k, v in GPU_DETAIL_DICT.items()
         ]
     )
-    gpu_usage["Informatics Allowance Available"] = {
+    gpu_usage["Informatics Allowance Free"] = {
         k: min(
             v - gpu_usage.get("Running", {}).get(k, 0),
             INFORMATICS_GPU_ALLOWANCE - used_gpus_total,
@@ -128,10 +127,12 @@ def count_gpu_usage():
         for k, v in GPU_DETAIL_DICT.items()
     }
 
-    gpu_usage["Total Available"] = {
+    gpu_usage["Total Free"] = {
         k: v - gpu_usage.get("Running", {}).get(k, 0)
         for k, v in GPU_DETAIL_DICT.items()
     }
+
+    gpu_usage["Cluster Total"] = GPU_DETAIL_DICT
 
     return gpu_usage
 
@@ -152,10 +153,13 @@ if __name__ == "__main__":
     # Populate the table
     for status, gpu_dict in gpu_usage.items():
         row = [status]
-        for gpu_model in GPU_DETAIL_DICT.keys():
-            row.append(
-                str(gpu_dict.get(gpu_model, 0))
-            )  # Use 0 if the GPU model is not found
-        table.add_row(*row)
+
+        if status.lower() != "succeeded" and status.lower() != "failed":
+
+            for gpu_model in GPU_DETAIL_DICT.keys():
+                row.append(
+                    str(gpu_dict.get(gpu_model, 0))
+                )  # Use 0 if the GPU model is not found
+            table.add_row(*row)
 
     console.print(table)

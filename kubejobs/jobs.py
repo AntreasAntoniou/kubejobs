@@ -62,7 +62,7 @@ class GPU_PRODUCT:
     NVIDIA_A100_SXM4_40GB_MIG_1G_5GB = "NVIDIA-A100-SXM4-40GB-MIG-1g.5gb"
     NVIDIA_H100_80GB = "NVIDIA-H100-80GB-HBM3"
 
-class KubeQueue:
+class KueueQueue:
     INFORMATICS = "informatics-user-queue"
     
 
@@ -101,7 +101,7 @@ class KubernetesJob:
         self,
         name: str,
         image: str,
-        kubernetes_queue_name: str,
+        kueue_queue_name: str,
         command: List[str] = None,
         args: Optional[List[str]] = None,
         cpu_request: Optional[str] = None,

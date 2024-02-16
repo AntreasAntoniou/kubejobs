@@ -1,4 +1,5 @@
 import datetime
+import enum
 import grp
 import json
 import logging
@@ -59,7 +60,11 @@ class GPU_PRODUCT:
     NVIDIA_A100_SXM4_40GB = "NVIDIA-A100-SXM4-40GB"
     NVIDIA_A100_SXM4_40GB_MIG_3G_20GB = "NVIDIA-A100-SXM4-40GB-MIG-3g.20gb"
     NVIDIA_A100_SXM4_40GB_MIG_1G_5GB = "NVIDIA-A100-SXM4-40GB-MIG-1g.5gb"
+    NVIDIA_H100_80GB = "NVIDIA-H100-80GB-HBM3"
 
+class KubeQueue:
+    INFORMATICS = "informatics-user-queue"
+    
 
 class KubernetesJob:
     """
@@ -96,6 +101,7 @@ class KubernetesJob:
         self,
         name: str,
         image: str,
+        kubernetes_queue_name: str,
         command: List[str] = None,
         args: Optional[List[str]] = None,
         cpu_request: Optional[str] = None,
@@ -160,8 +166,9 @@ class KubernetesJob:
 
         self.user_name = user_name or os.environ.get("USER", "unknown")
         self.user_email = user_email  # This is now a required field.
+        self.kubernetes_queue_name = kubernetes_queue_name
 
-        self.labels = {"eidf/user": self.user_name}
+        self.labels = {"eidf/user": self.user_name, "kueue.x-k8s.io/queue-name": self.kubernetes_queue_name}
 
         if labels is not None:
             self.labels.update(labels)

@@ -7,12 +7,14 @@ from rich.console import Console
 from rich.table import Table
 from tqdm.auto import tqdm
 
+
 # GPU details
 GPU_DETAIL_DICT = {
-    "NVIDIA-A100-SXM4-80GB": 32,
-    "NVIDIA-A100-SXM4-40GB": 88,
-    "NVIDIA-A100-SXM4-40GB-MIG-3g.20gb": 28,
-    "NVIDIA-A100-SXM4-40GB-MIG-1g.5gb": 140,
+    "NVIDIA-A100-SXM4-80GB": 40,
+    "NVIDIA-A100-SXM4-40GB": 112,
+    "NVIDIA-A100-SXM4-40GB-MIG-3g.20gb": 16,
+    "NVIDIA-A100-SXM4-40GB-MIG-1g.5gb": 56,
+    "NVIDIA-H100-80GB-HBM3": 32,
 }
 
 INFORMATICS_GPU_ALLOWANCE = 60

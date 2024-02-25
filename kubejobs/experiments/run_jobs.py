@@ -8,14 +8,13 @@ from collections import defaultdict
 from typing import Any, Dict, List, Optional, Union
 
 import fire
-from rich.logging import RichHandler
-
 from kubejobs.experiments.pvc_status import PVCStatus, get_pvc_status
-from kubejobs.jobs import KubernetesJob, create_pvc
+from kubejobs.jobs import KubernetesJob, KueueQueue, create_pvc
 from kubejobs.useful_single_liners.count_gpu_usage_general import (
     GPU_DETAIL_DICT,
     count_gpu_usage,
 )
+from rich.logging import RichHandler
 
 logger = logging.getLogger("kubejobs")
 logger.setLevel(logging.INFO)
@@ -91,6 +90,7 @@ def launch_jobs(
         job = KubernetesJob(
             name=exp_name.lower(),
             image="ghcr.io/antreasantoniou/gate:latest",
+            kueue_queue_name=KueueQueue.INFORMATICS,
             command=["/bin/bash", "-c", "--"],
             args=[command],
             gpu_type="nvidia.com/gpu",
@@ -129,7 +129,13 @@ def main(
         sys.exit(1)
 
     experiments = parse_commands_input(input_data)
-    gpu_types_to_use = set(list(GPU_DETAIL_DICT.keys())[:1])
+    gpu_types_to_use = set(list(GPU_DETAIL_DICT.keys()))
+    gpu_types_to_use = [
+        gpu_type for gpu_type in gpu_types_to_use if "MIG" not in gpu_type
+    ]
+    gpu_types_to_use = [
+        gpu_type for gpu_type in gpu_types_to_use if "40GB" not in gpu_type
+    ]
 
     ENV_VARS = {
         "WANDB_API_KEY": os.getenv("WANDB_API_KEY"),

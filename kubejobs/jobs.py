@@ -123,6 +123,7 @@ class KubernetesJob:
         labels: Optional[dict] = None,
         annotations: Optional[dict] = None,
         namespace: Optional[str] = None,
+        image_pull_secret: Optional[str] = None,
     ):
         self.name = name
 
@@ -159,6 +160,7 @@ class KubernetesJob:
             else f"{MAX_RAM // (MAX_GPU - gpu_limit + 1)}G"
         )
         self.secret_env_vars = secret_env_vars
+        self.image_pull_secret = image_pull_secret
         self.env_vars = env_vars
         self.volume_mounts = volume_mounts
         self.job_deadlineseconds = job_deadlineseconds
@@ -326,6 +328,9 @@ class KubernetesJob:
                 "backoffLimit": self.backoff_limit,
             },
         }
+
+        if self.image_pull_secret:
+            job["spec"]["imagePullSecrets"] = {"name": self.image_pull_secret}
 
         if self.job_deadlineseconds:
             job["spec"]["activeDeadlineSeconds"] = self.job_deadlineseconds

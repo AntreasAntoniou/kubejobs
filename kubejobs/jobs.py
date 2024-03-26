@@ -329,9 +329,7 @@ class KubernetesJob:
             },
         }
 
-        if self.image_pull_secret:
-            job["spec"]["imagePullSecrets"] = {"name": self.image_pull_secret}
-
+        
         if self.job_deadlineseconds:
             job["spec"]["activeDeadlineSeconds"] = self.job_deadlineseconds
 
@@ -372,6 +370,10 @@ class KubernetesJob:
                 # Add more volume types here if needed
 
                 job["spec"]["template"]["spec"]["volumes"].append(volume)
+        
+        if self.image_pull_secret:
+            job["spec"]["template"]["spec"]["imagePullSecrets"] = {"name": self.image_pull_secret}
+
 
         return yaml.dump(job)
 

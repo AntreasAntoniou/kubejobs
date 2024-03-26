@@ -370,6 +370,11 @@ class KubernetesJob:
                 elif "emptyDir" in mount_data:
                     volume["emptyDir"] = {}
                 # Add more volume types here if needed
+                if "server" in mount_data:
+                    volume["nfs"] = {
+                        "server": mount_data["server"],
+                        "path": mount_data["path"],
+                    }
 
                 job["spec"]["template"]["spec"]["volumes"].append(volume)
 

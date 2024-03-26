@@ -89,9 +89,11 @@ def get_job_status(job_name: str, namespace: str, job_dict: Dict) -> str:
             "failed": failed_count,
             "succeeded": succeeded_count,
             "condition": conditions[-1]["type"] if conditions else "--",
-            "reason": conditions[-1]["reason"]
-            if (conditions and hasattr(conditions[-1], "reason"))
-            else "--",
+            "reason": (
+                conditions[-1]["reason"]
+                if (conditions and hasattr(conditions[-1], "reason"))
+                else "--"
+            ),
             "ready": ready,
         }
     except Exception as e:
@@ -215,9 +217,11 @@ def add_row_to_table(
         completion_text = (
             f"{completions}✔ Completed"
             if completions == "1/1"
-            else f"{completions}|❌ Failed"
-            if job_status["condition"] == "Failed"
-            else f"{completions}|⏳ Running"
+            else (
+                f"{completions}|❌ Failed"
+                if job_status["condition"] == "Failed"
+                else f"{completions}|⏳ Running"
+            )
         )
     else:
         completion_text = (

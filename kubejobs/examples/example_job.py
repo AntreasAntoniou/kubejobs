@@ -3,8 +3,9 @@ import time
 
 from kubejobs.jobs import (
     KubernetesJob,
+    KueueQueue,
     create_jobs_for_experiments,
-    create_pvc, KueueQueue
+    create_pvc,
 )
 
 # unique id generated using time

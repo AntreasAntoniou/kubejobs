@@ -1,7 +1,7 @@
 # Example usage:
 import time
 
-from kubejobs.jobs import KubernetesJob, create_pvc, KueueQueue
+from kubejobs.jobs import KubernetesJob, KueueQueue, create_pvc
 
 env_vars = {
     "DATASET_DIR": "/data/",

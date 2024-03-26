@@ -46,7 +46,9 @@ def fetch_user_info():
     group_ids = os.getgrouplist(os.getlogin(), pw_entry.pw_gid)
 
     # Get group names from group IDs
-    user_info["groups"] = " ".join([grp.getgrgid(gid).gr_name for gid in group_ids])
+    user_info["groups"] = " ".join(
+        [grp.getgrgid(gid).gr_name for gid in group_ids]
+    )
 
     return user_info
 
@@ -144,9 +146,11 @@ class KubernetesJob:
         self.shm_size = (
             shm_size
             if shm_size is not None
-            else ram_request
-            if ram_request is not None
-            else f"{MAX_RAM // (MAX_GPU - gpu_limit + 1)}G"
+            else (
+                ram_request
+                if ram_request is not None
+                else f"{MAX_RAM // (MAX_GPU - gpu_limit + 1)}G"
+            )
         )
         self.secret_env_vars = secret_env_vars
         self.image_pull_secret = image_pull_secret
@@ -184,7 +188,9 @@ class KubernetesJob:
     def _add_shm_size(self, container: dict):
         """Adds shared memory volume if shm_size is set."""
         if self.shm_size:
-            container["volumeMounts"].append({"name": "dshm", "mountPath": "/dev/shm"})
+            container["volumeMounts"].append(
+                {"name": "dshm", "mountPath": "/dev/shm"}
+            )
         return container
 
     def _add_env_vars(self, container: dict):
@@ -261,9 +267,13 @@ class KubernetesJob:
             container["args"] = self.args
 
         if not (
-            self.gpu_type is None or self.gpu_limit is None or self.gpu_product is None
+            self.gpu_type is None
+            or self.gpu_limit is None
+            or self.gpu_product is None
         ):
-            container["resources"] = {"limits": {f"{self.gpu_type}": self.gpu_limit}}
+            container["resources"] = {
+                "limits": {f"{self.gpu_type}": self.gpu_limit}
+            }
 
         container = self._add_shm_size(container)
         container = self._add_env_vars(container)
@@ -290,10 +300,14 @@ class KubernetesJob:
             container["resources"]["limits"]["memory"] = self.ram_request
 
         if self.storage_request is not None:
-            container["resources"]["requests"]["storage"] = self.storage_request
+            container["resources"]["requests"][
+                "storage"
+            ] = self.storage_request
 
         if self.gpu_type is not None and self.gpu_limit is not None:
-            container["resources"]["limits"][f"{self.gpu_type}"] = self.gpu_limit
+            container["resources"]["limits"][
+                f"{self.gpu_type}"
+            ] = self.gpu_limit
 
         job = {
             "apiVersion": "batch/v1",
@@ -319,7 +333,6 @@ class KubernetesJob:
             },
         }
 
-        
         if self.job_deadlineseconds:
             job["spec"]["activeDeadlineSeconds"] = self.job_deadlineseconds
 
@@ -327,7 +340,9 @@ class KubernetesJob:
             job["metadata"]["namespace"] = self.namespace
 
         if not (
-            self.gpu_type is None or self.gpu_limit is None or self.gpu_product is None
+            self.gpu_type is None
+            or self.gpu_limit is None
+            or self.gpu_product is None
         ):
             job["spec"]["template"]["spec"]["nodeSelector"] = {
                 f"{self.gpu_type}.product": self.gpu_product
@@ -350,16 +365,19 @@ class KubernetesJob:
                 volume = {"name": mount_name}
 
                 if "pvc" in mount_data:
-                    volume["persistentVolumeClaim"] = {"claimName": mount_data["pvc"]}
+                    volume["persistentVolumeClaim"] = {
+                        "claimName": mount_data["pvc"]
+                    }
                 elif "emptyDir" in mount_data:
                     volume["emptyDir"] = {}
                 # Add more volume types here if needed
 
                 job["spec"]["template"]["spec"]["volumes"].append(volume)
-        
-        if self.image_pull_secret:
-            job["spec"]["template"]["spec"]["imagePullSecrets"] = {"name": self.image_pull_secret}
 
+        if self.image_pull_secret:
+            job["spec"]["template"]["spec"]["imagePullSecrets"] = {
+                "name": self.image_pull_secret
+            }
 
         return yaml.dump(job)
 
@@ -528,7 +546,9 @@ def create_pv(
     """
 
     if pv_type not in ["local", "node"]:
-        raise ValueError("pv_type must be either 'local' or 'gcePersistentDisk'")
+        raise ValueError(
+            "pv_type must be either 'local' or 'gcePersistentDisk'"
+        )
 
     if pv_type == "local" and not local_path:
         raise ValueError("local_path must be provided when pv_type is 'local'")

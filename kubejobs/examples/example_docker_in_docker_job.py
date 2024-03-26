@@ -2,7 +2,7 @@ import time
 
 from rich import print
 
-from kubejobs.jobs import KubernetesJob, create_pvc, KueueQueue
+from kubejobs.jobs import KubernetesJob, KueueQueue, create_pvc
 
 # unique id generated using time
 unique_id = time.strftime("%Y%m%d%H%M%S")

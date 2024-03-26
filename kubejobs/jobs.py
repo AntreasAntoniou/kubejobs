@@ -380,9 +380,9 @@ class KubernetesJob:
                 job["spec"]["template"]["spec"]["volumes"].append(volume)
 
         if self.image_pull_secret:
-            job["spec"]["template"]["spec"]["imagePullSecrets"] = {
+            job["spec"]["template"]["spec"]["imagePullSecrets"] = [{
                 "name": self.image_pull_secret
-            }
+            }]
 
         return yaml.dump(job)
 

@@ -52,6 +52,23 @@ print(job.generate_yaml())
 job.run()
 ```
 
+#### NFS partition
+
+You can mount an NFS partition to the Kubernetes Job by specifying the NFS server address, path, and mount options.
+
+```python
+from kubejobs.jobs import KubernetesJob
+
+job = KubernetesJob(
+    ...
+    volume_mounts={
+        "nfs": {"mountPath": "/nfs", "server": "10.24.1.255", "path": "/"}
+    },
+)
+```
+Note that both `server` and `path` are required fields for the NFS volume mount.
+
+
 ### create_jobs_for_experiments
 
 The create_jobs_for_experiments function allows you to create and run a series of Kubernetes Jobs for a list of commands. This can be helpful for running multiple experiments or tasks with different parameters in parallel.

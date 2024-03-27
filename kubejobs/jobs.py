@@ -109,7 +109,7 @@ class KubernetesJob:
         gpu_type: Optional[str] = None,
         gpu_product: Optional[str] = None,
         gpu_limit: Optional[int] = None,
-        backoff_limit: int = 4,
+        backoff_limit: int = 0,
         restart_policy: str = "Never",
         shm_size: Optional[str] = None,
         secret_env_vars: Optional[dict] = None,

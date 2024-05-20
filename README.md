@@ -31,9 +31,30 @@ pip install kubejobs
 
 ## Usage
 
+### KubernetesPod
+
+The `KubernetesPod` class helps you create a Kubernetes Pod, generate its YAML configuration, and run the pod. Kubernetes Pods are the smallest deployable units in Kubernetes and can contain one or more containers. They have no automatic restart policy, making them suitable for short-lived tasks.
+
+```python
+from kubejobs.pods import KubernetesPod
+
+# Create a Kubernetes Pod with a name, container image, and command
+pod = KubernetesPod(
+    name="my-pod",
+    image="ubuntu:20.04",
+    command=["/bin/bash", "-c", "echo 'Hello, World!'"],
+)
+
+# Generate the YAML configuration for the Pod
+print(pod.generate_yaml())
+
+# Run the Pod on the Kubernetes cluster
+pod.run()
+```
+
 ### KubernetesJob
 
-The `KubernetesJob` class helps you create a Kubernetes Job, generate its YAML configuration, and run the job. Kubernetes Jobs are useful for running short-lived, one-off tasks in your cluster.
+The `KubernetesJob` class helps you create a Kubernetes Job, generate its YAML configuration, and run the job. Kubernetes Jobs are useful for running short-lived, one-off tasks in your cluster, under-the-hood, they create one or more Pods to execute the task.
 
 ```python
 from kubejobs.jobs import KubernetesJob

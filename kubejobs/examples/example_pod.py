@@ -26,7 +26,9 @@ pod = KubernetesPod(
     gpu_limit=1,
     cpu_request=1,
     ram_request="1Gi",
-    volume_mounts={"nfs": {"mountPath": "/nfs", "server": "10.24.1.255", "path": "/"}},
+    volume_mounts={
+        "nfs": {"mountPath": "/nfs", "server": "10.24.1.255", "path": "/"}
+    },
 )
 
 pod_yaml = pod.generate_yaml()

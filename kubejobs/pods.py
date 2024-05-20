@@ -1,9 +1,10 @@
+import logging
 import os
-import yaml
 import subprocess
 from typing import List, Optional
+
+import yaml
 from kubernetes import config
-import logging
 
 from kubejobs.jobs import fetch_user_info
 
@@ -119,7 +120,9 @@ class KubernetesPod:
     def _add_shm_size(self, container: dict):
         """Adds shared memory volume if shm_size is set."""
         if self.shm_size:
-            container["volumeMounts"].append({"name": "dshm", "mountPath": "/dev/shm"})
+            container["volumeMounts"].append(
+                {"name": "dshm", "mountPath": "/dev/shm"}
+            )
         return container
 
     def _add_env_vars(self, container: dict):
@@ -195,9 +198,13 @@ class KubernetesPod:
             container["args"] = self.args
 
         if not (
-            self.gpu_type is None or self.gpu_limit is None or self.gpu_product is None
+            self.gpu_type is None
+            or self.gpu_limit is None
+            or self.gpu_product is None
         ):
-            container["resources"] = {"limits": {f"{self.gpu_type}": self.gpu_limit}}
+            container["resources"] = {
+                "limits": {f"{self.gpu_type}": self.gpu_limit}
+            }
 
         container = self._add_shm_size(container)
         container = self._add_env_vars(container)
@@ -224,10 +231,14 @@ class KubernetesPod:
             container["resources"]["limits"]["memory"] = self.ram_request
 
         if self.storage_request is not None:
-            container["resources"]["requests"]["storage"] = self.storage_request
+            container["resources"]["requests"][
+                "storage"
+            ] = self.storage_request
 
         if self.gpu_type is not None and self.gpu_limit is not None:
-            container["resources"]["limits"][f"{self.gpu_type}"] = self.gpu_limit
+            container["resources"]["limits"][
+                f"{self.gpu_type}"
+            ] = self.gpu_limit
 
         pod = {
             "apiVersion": "v1",
@@ -248,9 +259,13 @@ class KubernetesPod:
             pod["metadata"]["namespace"] = self.namespace
 
         if not (
-            self.gpu_type is None or self.gpu_limit is None or self.gpu_product is None
+            self.gpu_type is None
+            or self.gpu_limit is None
+            or self.gpu_product is None
         ):
-            pod["spec"]["nodeSelector"] = {f"{self.gpu_type}.product": self.gpu_product}
+            pod["spec"]["nodeSelector"] = {
+                f"{self.gpu_type}.product": self.gpu_product
+            }
 
         # Add shared memory volume if shm_size is set
         if self.shm_size:
@@ -270,7 +285,9 @@ class KubernetesPod:
                 volume = {"name": mount_name}
 
                 if "pvc" in mount_data:
-                    volume["persistentVolumeClaim"] = {"claimName": mount_data["pvc"]}
+                    volume["persistentVolumeClaim"] = {
+                        "claimName": mount_data["pvc"]
+                    }
                 elif "emptyDir" in mount_data:
                     volume["emptyDir"] = {}
                 # Add more volume types here if needed
@@ -283,7 +300,9 @@ class KubernetesPod:
                 pod["spec"]["volumes"].append(volume)
 
         if self.image_pull_secret:
-            pod["spec"]["imagePullSecrets"] = [{"name": self.image_pull_secret}]
+            pod["spec"]["imagePullSecrets"] = [
+                {"name": self.image_pull_secret}
+            ]
 
         return yaml.dump(pod)
 

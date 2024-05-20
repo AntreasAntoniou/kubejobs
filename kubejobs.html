@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="lang:clipboard.copy" content="Copy to clipboard">
+  <meta name="lang:clipboard.copied" content="Copied to clipboard">
+  <meta name="lang:search.language" content="en">
+  <meta name="lang:search.pipeline.stopwords" content="True">
+  <meta name="lang:search.pipeline.trimmer" content="True">
+  <meta name="lang:search.result.none" content="No matching documents">
+  <meta name="lang:search.result.one" content="1 matching document">
+  <meta name="lang:search.result.other" content="# matching documents">
+  <meta name="lang:search.tokenizer" content="[\s\-]+">
+
+  
+    <link href="https://fonts.gstatic.com/" rel="preconnect" crossorigin>
+    <link href="https://fonts.googleapis.com/css?family=Roboto+Mono:400,500,700|Roboto:300,400,400i,700&display=fallback" rel="stylesheet">
+
+    <style>
+      body,
+      input {
+        font-family: "Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif
+      }
+
+      code,
+      kbd,
+      pre {
+        font-family: "Roboto Mono", "Courier New", Courier, monospace
+      }
+    </style>
+  
+
+  <link rel="stylesheet" href="_static/stylesheets/application.css"/>
+  <link rel="stylesheet" href="_static/stylesheets/application-palette.css"/>
+  <link rel="stylesheet" href="_static/stylesheets/application-fixes.css"/>
+  
+  <link rel="stylesheet" href="_static/fonts/material-icons.css"/>
+  
+  <meta name="theme-color" content="#3f51b5">
+  <script src="_static/javascripts/modernizr.js"></script>
+  
+  
+  
+    <title>kubejobs package &#8212; Kubejobs 0.3.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=83e35b93" />
+    <link rel="stylesheet" type="text/css" href="_static/material.css?v=79c92029" />
+    <script src="_static/jquery.js?v=5d32c60e"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+    <script src="_static/documentation_options.js?v=e259d695"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="kubejobs" href="modules.html" />
+  
+   
+
+  </head>
+  <body dir=ltr
+        data-md-color-primary=blue data-md-color-accent=light-blue>
+  
+  <svg class="md-svg">
+    <defs data-children-count="0">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" width="416" height="448" viewBox="0 0 416 448" id="__github"><path fill="currentColor" d="M160 304q0 10-3.125 20.5t-10.75 19T128 352t-18.125-8.5-10.75-19T96 304t3.125-20.5 10.75-19T128 256t18.125 8.5 10.75 19T160 304zm160 0q0 10-3.125 20.5t-10.75 19T288 352t-18.125-8.5-10.75-19T256 304t3.125-20.5 10.75-19T288 256t18.125 8.5 10.75 19T320 304zm40 0q0-30-17.25-51T296 232q-10.25 0-48.75 5.25Q229.5 240 208 240t-39.25-2.75Q130.75 232 120 232q-29.5 0-46.75 21T56 304q0 22 8 38.375t20.25 25.75 30.5 15 35 7.375 37.25 1.75h42q20.5 0 37.25-1.75t35-7.375 30.5-15 20.25-25.75T360 304zm56-44q0 51.75-15.25 82.75-9.5 19.25-26.375 33.25t-35.25 21.5-42.5 11.875-42.875 5.5T212 416q-19.5 0-35.5-.75t-36.875-3.125-38.125-7.5-34.25-12.875T37 371.5t-21.5-28.75Q0 312 0 260q0-59.25 34-99-6.75-20.5-6.75-42.5 0-29 12.75-54.5 27 0 47.5 9.875t47.25 30.875Q171.5 96 212 96q37 0 70 8 26.25-20.5 46.75-30.25T376 64q12.75 25.5 12.75 54.5 0 21.75-6.75 42 34 40 34 99.5z"/></svg>
+      
+    </defs>
+  </svg>
+  
+  <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer">
+  <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search">
+  <label class="md-overlay" data-md-component="overlay" for="__drawer"></label>
+  <a href="#kubejobs" tabindex="1" class="md-skip"> Skip to content </a>
+  <header class="md-header" data-md-component="header">
+  <nav class="md-header-nav md-grid">
+    <div class="md-flex navheader">
+      <div class="md-flex__cell md-flex__cell--shrink">
+        <a href="index.html" title="Kubejobs 0.3.0 documentation"
+           class="md-header-nav__button md-logo">
+          
+            &nbsp;
+          
+        </a>
+      </div>
+      <div class="md-flex__cell md-flex__cell--shrink">
+        <label class="md-icon md-icon--menu md-header-nav__button" for="__drawer"></label>
+      </div>
+      <div class="md-flex__cell md-flex__cell--stretch">
+        <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
+          <span class="md-header-nav__topic">Kubejobs</span>
+          <span class="md-header-nav__topic"> kubejobs package </span>
+        </div>
+      </div>
+      <div class="md-flex__cell md-flex__cell--shrink">
+        <label class="md-icon md-icon--search md-header-nav__button" for="__search"></label>
+        
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" action="search.html" method="get" name="search">
+      <input type="text" class="md-search__input" name="q" placeholder=""Search""
+             autocapitalize="off" autocomplete="off" spellcheck="false"
+             data-md-component="query" data-md-state="active">
+      <label class="md-icon md-search__icon" for="__search"></label>
+      <button type="reset" class="md-icon md-search__icon" data-md-component="reset" tabindex="-1">
+        &#xE5CD;
+      </button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="result">
+          <div class="md-search-result__meta">
+            Type to start searching
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+      </div>
+      
+        <div class="md-flex__cell md-flex__cell--shrink">
+          <div class="md-header-nav__source">
+            <a href="https://github.com/AntreasAntoniou/Kubejobs" title="Go to repository" class="md-source" data-md-source="github">
+
+    <div class="md-source__icon">
+      <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 24 24" width="28" height="28">
+        <use xlink:href="#__github" width="24" height="24"></use>
+      </svg>
+    </div>
+  
+  <div class="md-source__repository">
+    kubejobs
+  </div>
+</a>
+          </div>
+        </div>
+      
+      
+  
+  <script src="_static/javascripts/version_dropdown.js"></script>
+  <script>
+    var json_loc = ""versions.json"",
+        target_loc = "../",
+        text = "Versions";
+    $( document ).ready( add_version_dropdown(json_loc, target_loc, text));
+  </script>
+  
+
+    </div>
+  </nav>
+</header>
+
+  
+  <div class="md-container">
+    
+    
+    
+  <nav class="md-tabs" data-md-component="tabs">
+    <div class="md-tabs__inner md-grid">
+      <ul class="md-tabs__list">
+          <li class="md-tabs__item"><a href="index.html" class="md-tabs__link">Kubejobs 0.3.0 documentation</a></li>
+          <li class="md-tabs__item"><a href="modules.html" class="md-tabs__link">kubejobs</a></li>
+      </ul>
+    </div>
+  </nav>
+    <main class="md-main">
+      <div class="md-main__inner md-grid" data-md-component="container">
+        
+          <div class="md-sidebar md-sidebar--primary" data-md-component="navigation">
+            <div class="md-sidebar__scrollwrap">
+              <div class="md-sidebar__inner">
+                <nav class="md-nav md-nav--primary" data-md-level="0">
+  <label class="md-nav__title md-nav__title--site" for="__drawer">
+    <a href="index.html" title="Kubejobs 0.3.0 documentation" class="md-nav__button md-logo">
+      
+        <img src="_static/" alt=" logo" width="48" height="48">
+      
+    </a>
+    <a href="index.html"
+       title="Kubejobs 0.3.0 documentation">Kubejobs</a>
+  </label>
+    <div class="md-nav__source">
+      <a href="https://github.com/AntreasAntoniou/Kubejobs" title="Go to repository" class="md-source" data-md-source="github">
+
+    <div class="md-source__icon">
+      <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 24 24" width="28" height="28">
+        <use xlink:href="#__github" width="24" height="24"></use>
+      </svg>
+    </div>
+  
+  <div class="md-source__repository">
+    kubejobs
+  </div>
+</a>
+    </div>
+  
+  
+
+</nav>
+              </div>
+            </div>
+          </div>
+          <div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
+            <div class="md-sidebar__scrollwrap">
+              <div class="md-sidebar__inner">
+                
+<nav class="md-nav md-nav--secondary">
+    <label class="md-nav__title" for="__toc">"Contents"</label>
+  <ul class="md-nav__list" data-md-scrollfix="">
+        <li class="md-nav__item"><a href="#kubejobs--page-root" class="md-nav__link">kubejobs package</a><nav class="md-nav">
+              <ul class="md-nav__list">
+        <li class="md-nav__item"><a href="#submodules" class="md-nav__link">Submodules</a>
+        </li>
+        <li class="md-nav__item"><a href="#module-kubejobs.jobs" class="md-nav__link">kubejobs.jobs module</a><nav class="md-nav">
+              <ul class="md-nav__list">
+        <li class="md-nav__item"><a href="#kubejobs.jobs.GPU_PRODUCT" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">GPU_PRODUCT</span></code></a><nav class="md-nav">
+              <ul class="md-nav__list">
+        <li class="md-nav__item"><a href="#kubejobs.jobs.GPU_PRODUCT.NVIDIA_A100_SXM4_40GB" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">GPU_PRODUCT.NVIDIA_A100_SXM4_40GB</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#kubejobs.jobs.GPU_PRODUCT.NVIDIA_A100_SXM4_40GB_MIG_1G_5GB" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">GPU_PRODUCT.NVIDIA_A100_SXM4_40GB_MIG_1G_5GB</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#kubejobs.jobs.GPU_PRODUCT.NVIDIA_A100_SXM4_40GB_MIG_3G_20GB" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">GPU_PRODUCT.NVIDIA_A100_SXM4_40GB_MIG_3G_20GB</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#kubejobs.jobs.GPU_PRODUCT.NVIDIA_A100_SXM4_80GB" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">GPU_PRODUCT.NVIDIA_A100_SXM4_80GB</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#kubejobs.jobs.GPU_PRODUCT.NVIDIA_H100_80GB" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">GPU_PRODUCT.NVIDIA_H100_80GB</span></code></a>
+        </li></ul>
+            </nav>
+        </li>
+        <li class="md-nav__item"><a href="#kubejobs.jobs.KubernetesJob" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">KubernetesJob</span></code></a><nav class="md-nav">
+              <ul class="md-nav__list">
+        <li class="md-nav__item"><a href="#kubejobs.jobs.KubernetesJob.name" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">KubernetesJob.name</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#kubejobs.jobs.KubernetesJob.image" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">KubernetesJob.image</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#kubejobs.jobs.KubernetesJob.command" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">KubernetesJob.command</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#kubejobs.jobs.KubernetesJob.args" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">KubernetesJob.args</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#kubejobs.jobs.KubernetesJob.cpu_request" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">KubernetesJob.cpu_request</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#kubejobs.jobs.KubernetesJob.ram_request" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">KubernetesJob.ram_request</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#kubejobs.jobs.KubernetesJob.storage_request" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">KubernetesJob.storage_request</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#kubejobs.jobs.KubernetesJob.gpu_type" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">KubernetesJob.gpu_type</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#kubejobs.jobs.KubernetesJob.gpu_product" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">KubernetesJob.gpu_product</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#kubejobs.jobs.KubernetesJob.gpu_limit" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">KubernetesJob.gpu_limit</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#kubejobs.jobs.KubernetesJob.backoff_limit" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">KubernetesJob.backoff_limit</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#kubejobs.jobs.KubernetesJob.restart_policy" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">KubernetesJob.restart_policy</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#kubejobs.jobs.KubernetesJob.shm_size" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">KubernetesJob.shm_size</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#kubejobs.jobs.KubernetesJob.secret_env_vars" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">KubernetesJob.secret_env_vars</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#kubejobs.jobs.KubernetesJob.env_vars" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">KubernetesJob.env_vars</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#kubejobs.jobs.KubernetesJob.volume_mounts" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">KubernetesJob.volume_mounts</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#kubejobs.jobs.KubernetesJob.namespace" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">KubernetesJob.namespace</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#kubejobs.jobs.KubernetesJob.generate_yaml" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">KubernetesJob.generate_yaml()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#kubejobs.jobs.KubernetesJob.from_command_line" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">KubernetesJob.from_command_line()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#id0" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">KubernetesJob.generate_yaml()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#kubejobs.jobs.KubernetesJob.run" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">KubernetesJob.run()</span></code></a>
+        </li></ul>
+            </nav>
+        </li>
+        <li class="md-nav__item"><a href="#kubejobs.jobs.KueueQueue" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">KueueQueue</span></code></a><nav class="md-nav">
+              <ul class="md-nav__list">
+        <li class="md-nav__item"><a href="#kubejobs.jobs.KueueQueue.INFORMATICS" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">KueueQueue.INFORMATICS</span></code></a>
+        </li></ul>
+            </nav>
+        </li>
+        <li class="md-nav__item"><a href="#kubejobs.jobs.create_jobs_for_experiments" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">create_jobs_for_experiments()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#kubejobs.jobs.create_pv" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">create_pv()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#kubejobs.jobs.create_pvc" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">create_pvc()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#kubejobs.jobs.fetch_user_info" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">fetch_user_info()</span></code></a>
+        </li></ul>
+            </nav>
+        </li>
+        <li class="md-nav__item"><a href="#module-kubejobs" class="md-nav__link">Module contents</a>
+        </li></ul>
+            </nav>
+        </li>
+    
+<li class="md-nav__item"><a class="md-nav__extra_link" href="_sources/kubejobs.rst.txt">Show Source</a> </li>
+
+<li id="searchbox" class="md-nav__item"></li>
+
+  </ul>
+</nav>
+              </div>
+            </div>
+          </div>
+        
+        <div class="md-content">
+          <article class="md-content__inner md-typeset" role="main">
+            
+  <section id="kubejobs-package">
+<h1 id="kubejobs--page-root">kubejobs package<a class="headerlink" href="#kubejobs--page-root" title="Link to this heading"></a></h1>
+<section id="submodules">
+<h2 id="submodules">Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+</section>
+<section id="module-kubejobs.jobs">
+<span id="kubejobs-jobs-module"></span><h2 id="module-kubejobs.jobs">kubejobs.jobs module<a class="headerlink" href="#module-kubejobs.jobs" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="kubejobs.jobs.GPU_PRODUCT">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">kubejobs.jobs.</span></span><span class="sig-name descname"><span class="pre">GPU_PRODUCT</span></span><a class="reference internal" href="_modules/kubejobs/jobs.html#GPU_PRODUCT"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kubejobs.jobs.GPU_PRODUCT" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="kubejobs.jobs.GPU_PRODUCT.NVIDIA_A100_SXM4_40GB">
+<span class="sig-name descname"><span class="pre">NVIDIA_A100_SXM4_40GB</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'NVIDIA-A100-SXM4-40GB'</span></em><a class="headerlink" href="#kubejobs.jobs.GPU_PRODUCT.NVIDIA_A100_SXM4_40GB" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="kubejobs.jobs.GPU_PRODUCT.NVIDIA_A100_SXM4_40GB_MIG_1G_5GB">
+<span class="sig-name descname"><span class="pre">NVIDIA_A100_SXM4_40GB_MIG_1G_5GB</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'NVIDIA-A100-SXM4-40GB-MIG-1g.5gb'</span></em><a class="headerlink" href="#kubejobs.jobs.GPU_PRODUCT.NVIDIA_A100_SXM4_40GB_MIG_1G_5GB" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="kubejobs.jobs.GPU_PRODUCT.NVIDIA_A100_SXM4_40GB_MIG_3G_20GB">
+<span class="sig-name descname"><span class="pre">NVIDIA_A100_SXM4_40GB_MIG_3G_20GB</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'NVIDIA-A100-SXM4-40GB-MIG-3g.20gb'</span></em><a class="headerlink" href="#kubejobs.jobs.GPU_PRODUCT.NVIDIA_A100_SXM4_40GB_MIG_3G_20GB" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="kubejobs.jobs.GPU_PRODUCT.NVIDIA_A100_SXM4_80GB">
+<span class="sig-name descname"><span class="pre">NVIDIA_A100_SXM4_80GB</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'NVIDIA-A100-SXM4-80GB'</span></em><a class="headerlink" href="#kubejobs.jobs.GPU_PRODUCT.NVIDIA_A100_SXM4_80GB" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="kubejobs.jobs.GPU_PRODUCT.NVIDIA_H100_80GB">
+<span class="sig-name descname"><span class="pre">NVIDIA_H100_80GB</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'NVIDIA-H100-80GB-HBM3'</span></em><a class="headerlink" href="#kubejobs.jobs.GPU_PRODUCT.NVIDIA_H100_80GB" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+</dd></dl>
+<dl class="py class">
+<dt class="sig sig-object py" id="kubejobs.jobs.KubernetesJob">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">kubejobs.jobs.</span></span><span class="sig-name descname"><span class="pre">KubernetesJob</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kueue_queue_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">command</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cpu_request</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ram_request</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">storage_request</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gpu_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gpu_product</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gpu_limit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">backoff_limit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">restart_policy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'Never'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shm_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">secret_env_vars</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">env_vars</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volume_mounts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">job_deadlineseconds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">privileged_security_context</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_email</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">namespace</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_pull_secret</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kubejobs/jobs.html#KubernetesJob"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kubejobs.jobs.KubernetesJob" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A class for generating Kubernetes Job YAML configurations.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="kubejobs.jobs.KubernetesJob.name">
+<span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#kubejobs.jobs.KubernetesJob.name" title="Link to this definition"></a></dt>
+<dd><p>Name of the job and associated resources.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="kubejobs.jobs.KubernetesJob.image">
+<span class="sig-name descname"><span class="pre">image</span></span><a class="headerlink" href="#kubejobs.jobs.KubernetesJob.image" title="Link to this definition"></a></dt>
+<dd><p>Container image to use for the job.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="kubejobs.jobs.KubernetesJob.command">
+<span class="sig-name descname"><span class="pre">command</span></span><a class="headerlink" href="#kubejobs.jobs.KubernetesJob.command" title="Link to this definition"></a></dt>
+<dd><p>Command to execute in the container. Defaults to None.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List[str], optional</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="kubejobs.jobs.KubernetesJob.args">
+<span class="sig-name descname"><span class="pre">args</span></span><a class="headerlink" href="#kubejobs.jobs.KubernetesJob.args" title="Link to this definition"></a></dt>
+<dd><p>Arguments for the command. Defaults to None.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List[str], optional</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="kubejobs.jobs.KubernetesJob.cpu_request">
+<span class="sig-name descname"><span class="pre">cpu_request</span></span><a class="headerlink" href="#kubejobs.jobs.KubernetesJob.cpu_request" title="Link to this definition"></a></dt>
+<dd><p>Amount of CPU to request. For example, “500m” for half a CPU. Defaults to None. Max is 192 CPUs</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str, optional</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="kubejobs.jobs.KubernetesJob.ram_request">
+<span class="sig-name descname"><span class="pre">ram_request</span></span><a class="headerlink" href="#kubejobs.jobs.KubernetesJob.ram_request" title="Link to this definition"></a></dt>
+<dd><p>Amount of RAM to request. For example, “1Gi” for 1 gibibyte. Defaults to None. Max is 890 GB</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str, optional</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="kubejobs.jobs.KubernetesJob.storage_request">
+<span class="sig-name descname"><span class="pre">storage_request</span></span><a class="headerlink" href="#kubejobs.jobs.KubernetesJob.storage_request" title="Link to this definition"></a></dt>
+<dd><p>Amount of storage to request. For example, “10Gi” for 10 gibibytes. Defaults to None.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str, optional</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="kubejobs.jobs.KubernetesJob.gpu_type">
+<span class="sig-name descname"><span class="pre">gpu_type</span></span><a class="headerlink" href="#kubejobs.jobs.KubernetesJob.gpu_type" title="Link to this definition"></a></dt>
+<dd><p>Type of GPU resource, e.g. “nvidia.com/gpu”. Defaults to None.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str, optional</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="kubejobs.jobs.KubernetesJob.gpu_product">
+<span class="sig-name descname"><span class="pre">gpu_product</span></span><a class="headerlink" href="#kubejobs.jobs.KubernetesJob.gpu_product" title="Link to this definition"></a></dt>
+<dd><p>GPU product, e.g. “NVIDIA-A100-SXM4-80GB”. Defaults to None.
+Possible choices: NVIDIA-A100-SXM4-80GB – a full non-MIG 80GB GPU, total available 32</p>
+<blockquote>
+<div><p>NVIDIA-A100-SXM4-40GB – a full non-MIG 40GB GPU, total available 88
+NVIDIA-A100-SXM4-40GB-MIG-3g.20gb – just under half-GPU
+NVIDIA-A100-SXM4-40GB-MIG-1g.5gb – a seventh of a GPU</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str, optional</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="kubejobs.jobs.KubernetesJob.gpu_limit">
+<span class="sig-name descname"><span class="pre">gpu_limit</span></span><a class="headerlink" href="#kubejobs.jobs.KubernetesJob.gpu_limit" title="Link to this definition"></a></dt>
+<dd><p>Number of GPU resources to allocate. Defaults to None.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int, optional</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="kubejobs.jobs.KubernetesJob.backoff_limit">
+<span class="sig-name descname"><span class="pre">backoff_limit</span></span><a class="headerlink" href="#kubejobs.jobs.KubernetesJob.backoff_limit" title="Link to this definition"></a></dt>
+<dd><p>Maximum number of retries before marking job as failed. Defaults to 4.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int, optional</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="kubejobs.jobs.KubernetesJob.restart_policy">
+<span class="sig-name descname"><span class="pre">restart_policy</span></span><a class="headerlink" href="#kubejobs.jobs.KubernetesJob.restart_policy" title="Link to this definition"></a></dt>
+<dd><p>Restart policy for the job, default is “Never”.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str, optional</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="kubejobs.jobs.KubernetesJob.shm_size">
+<span class="sig-name descname"><span class="pre">shm_size</span></span><a class="headerlink" href="#kubejobs.jobs.KubernetesJob.shm_size" title="Link to this definition"></a></dt>
+<dd><p>Size of shared memory, e.g. “2Gi”. If not set, defaults to None.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str, optional</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="kubejobs.jobs.KubernetesJob.secret_env_vars">
+<span class="sig-name descname"><span class="pre">secret_env_vars</span></span><a class="headerlink" href="#kubejobs.jobs.KubernetesJob.secret_env_vars" title="Link to this definition"></a></dt>
+<dd><p>Dictionary of secret environment variables. Defaults to None.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict, optional</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="kubejobs.jobs.KubernetesJob.env_vars">
+<span class="sig-name descname"><span class="pre">env_vars</span></span><a class="headerlink" href="#kubejobs.jobs.KubernetesJob.env_vars" title="Link to this definition"></a></dt>
+<dd><p>Dictionary of normal (non-secret) environment variables. Defaults to None.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict, optional</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="kubejobs.jobs.KubernetesJob.volume_mounts">
+<span class="sig-name descname"><span class="pre">volume_mounts</span></span><a class="headerlink" href="#kubejobs.jobs.KubernetesJob.volume_mounts" title="Link to this definition"></a></dt>
+<dd><p>Dictionary of volume mounts. Defaults to None.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict, optional</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="kubejobs.jobs.KubernetesJob.namespace">
+<span class="sig-name descname"><span class="pre">namespace</span></span><a class="headerlink" href="#kubejobs.jobs.KubernetesJob.namespace" title="Link to this definition"></a></dt>
+<dd><p>Namespace of the job. Defaults to None.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str, optional</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="kubejobs.jobs.KubernetesJob.generate_yaml">
+<span class="sig-name descname"><span class="pre">generate_yaml</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/kubejobs/jobs.html#KubernetesJob.generate_yaml"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kubejobs.jobs.KubernetesJob.generate_yaml" title="Link to this definition"></a></dt>
+<dd><p>Generate the Kubernetes Job YAML configuration.</p>
+</dd></dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="kubejobs.jobs.KubernetesJob.from_command_line">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_command_line</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/kubejobs/jobs.html#KubernetesJob.from_command_line"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kubejobs.jobs.KubernetesJob.from_command_line" title="Link to this definition"></a></dt>
+<dd><p>Create a KubernetesJob instance from command-line arguments
+and run the job.
+Example: python kubejobs/jobs.py –image=nvcr.io/nvidia/cuda:11.8.0-cudnn8-devel-ubuntu20.04 –gpu_type=nvidia.com/gpu –gpu_limit=1 –backoff_limit=4 –gpu_product=NVIDIA-A100-SXM4-40GB</p>
+</dd></dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="id0">
+<span class="sig-name descname"><span class="pre">generate_yaml</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/kubejobs/jobs.html#KubernetesJob.generate_yaml"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id0" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="kubejobs.jobs.KubernetesJob.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/kubejobs/jobs.html#KubernetesJob.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kubejobs.jobs.KubernetesJob.run" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+</dd></dl>
+<dl class="py class">
+<dt class="sig sig-object py" id="kubejobs.jobs.KueueQueue">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">kubejobs.jobs.</span></span><span class="sig-name descname"><span class="pre">KueueQueue</span></span><a class="reference internal" href="_modules/kubejobs/jobs.html#KueueQueue"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kubejobs.jobs.KueueQueue" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="kubejobs.jobs.KueueQueue.INFORMATICS">
+<span class="sig-name descname"><span class="pre">INFORMATICS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'informatics-user-queue'</span></em><a class="headerlink" href="#kubejobs.jobs.KueueQueue.INFORMATICS" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="kubejobs.jobs.create_jobs_for_experiments">
+<span class="sig-prename descclassname"><span class="pre">kubejobs.jobs.</span></span><span class="sig-name descname"><span class="pre">create_jobs_for_experiments</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">commands</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kubejobs/jobs.html#create_jobs_for_experiments"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kubejobs.jobs.create_jobs_for_experiments" title="Link to this definition"></a></dt>
+<dd><p>Creates and runs a Kubernetes Job for each command in the given list of commands.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>commands</strong> – A list of strings, where each string represents a command to be executed.</p></li>
+<li><p><strong>args</strong> – Positional arguments to be passed to the KubernetesJob constructor.</p></li>
+<li><p><strong>kwargs</strong> – Keyword arguments to be passed to the KubernetesJob constructor.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Example<span class="colon">:</span></dt>
+<dd class="field-even"><p></p></dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">kubejobs</span> <span class="kn">import</span> <span class="n">KubernetesJob</span>
+
+<span class="n">commands</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">"python experiment.py --param1 value1"</span><span class="p">,</span>
+    <span class="s2">"python experiment.py --param1 value2"</span><span class="p">,</span>
+    <span class="s2">"python experiment.py --param1 value3"</span>
+<span class="p">]</span>
+
+<span class="n">create_jobs_for_experiments</span><span class="p">(</span>
+    <span class="n">commands</span><span class="p">,</span>
+    <span class="n">image</span><span class="o">=</span><span class="s2">"nvcr.io/nvidia/cuda:12.0.0-cudnn8-devel-ubuntu22.04"</span><span class="p">,</span>
+    <span class="n">gpu_type</span><span class="o">=</span><span class="s2">"nvidia.com/gpu"</span><span class="p">,</span>
+    <span class="n">gpu_limit</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">backoff_limit</span><span class="o">=</span><span class="mi">4</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="kubejobs.jobs.create_pv">
+<span class="sig-prename descclassname"><span class="pre">kubejobs.jobs.</span></span><span class="sig-name descname"><span class="pre">create_pv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pv_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">storage</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">storage_class_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">access_modes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pv_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">namespace</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'default'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">claim_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">local_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fs_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'ext4'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kubejobs/jobs.html#create_pv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kubejobs.jobs.create_pv" title="Link to this definition"></a></dt>
+<dd><p>Create a PersistentVolume in the specified namespace with the specified type.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pv_name</strong> – The name of the PersistentVolume.</p></li>
+<li><p><strong>storage</strong> – The amount of storage for the PersistentVolume (e.g., “1500Gi”).</p></li>
+<li><p><strong>storage_class_name</strong> – The storage class name for the PersistentVolume.</p></li>
+<li><p><strong>access_modes</strong> – A list of access modes for the PersistentVolume.</p></li>
+<li><p><strong>pv_type</strong> – The type of PersistentVolume, either ‘local’ or ‘gcePersistentDisk’.</p></li>
+<li><p><strong>namespace</strong> – The namespace in which to create the PersistentVolume. Defaults to “default”.</p></li>
+<li><p><strong>claim_name</strong> – The name of the PersistentVolumeClaim to bind to the PersistentVolume.</p></li>
+<li><p><strong>local_path</strong> – The path on the host for a local PersistentVolume. Required if pv_type is ‘local’.</p></li>
+<li><p><strong>fs_type</strong> – The filesystem type for the PersistentVolume. Defaults to “ext4”.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Example usage:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">create_pv</span><span class="p">(</span><span class="s2">"pv-instafluencer-data"</span><span class="p">,</span> <span class="s2">"1500Gi"</span><span class="p">,</span> <span class="s2">"sc-instafluencer-data"</span><span class="p">,</span> <span class="p">[</span><span class="s2">"ReadOnlyMany"</span><span class="p">],</span> <span class="s2">"local"</span><span class="p">,</span>
+          <span class="n">claim_name</span><span class="o">=</span><span class="s2">"pvc-instafluencer-data"</span><span class="p">,</span> <span class="n">local_path</span><span class="o">=</span><span class="s2">"/mnt/data"</span><span class="p">)</span>
+<span class="c1"># This will create a local PersistentVolume named "pv-instafluencer-data" with 1500Gi of storage,</span>
+<span class="c1"># "sc-instafluencer-data" storage class, ReadOnlyMany access mode, and a local path "/mnt/data".</span>
+</pre></div>
+</div>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="kubejobs.jobs.create_pvc">
+<span class="sig-prename descclassname"><span class="pre">kubejobs.jobs.</span></span><span class="sig-name descname"><span class="pre">create_pvc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pvc_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">storage</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">access_modes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kubejobs/jobs.html#create_pvc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kubejobs.jobs.create_pvc" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="kubejobs.jobs.fetch_user_info">
+<span class="sig-prename descclassname"><span class="pre">kubejobs.jobs.</span></span><span class="sig-name descname"><span class="pre">fetch_user_info</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/kubejobs/jobs.html#fetch_user_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kubejobs.jobs.fetch_user_info" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+</section>
+<section id="module-kubejobs">
+<span id="module-contents"></span><h2 id="module-kubejobs">Module contents<a class="headerlink" href="#module-kubejobs" title="Link to this heading"></a></h2>
+</section>
+</section>
+
+
+          </article>
+        </div>
+      </div>
+    </main>
+  </div>
+  <footer class="md-footer">
+    <div class="md-footer-nav">
+      <nav class="md-footer-nav__inner md-grid">
+          
+            <a href="modules.html" title="kubejobs"
+               class="md-flex md-footer-nav__link md-footer-nav__link--prev"
+               rel="prev">
+              <div class="md-flex__cell md-flex__cell--shrink">
+                <i class="md-icon md-icon--arrow-back md-footer-nav__button"></i>
+              </div>
+              <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
+                <span class="md-flex__ellipsis">
+                  <span
+                      class="md-footer-nav__direction"> "Previous" </span> kubejobs </span>
+              </div>
+            </a>
+          
+          
+        </a>
+        
+      </nav>
+    </div>
+    <div class="md-footer-meta md-typeset">
+      <div class="md-footer-meta__inner md-grid">
+        <div class="md-footer-copyright">
+          <div class="md-footer-copyright__highlight">
+              &#169; Copyright 2023, Antreas Antoniou.
+              
+          </div>
+            Created using
+            <a href="http://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
+             and
+            <a href="https://github.com/bashtage/sphinx-material/">Material for
+              Sphinx</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+  <script src="_static/javascripts/application.js"></script>
+  <script>app.initialize({version: "1.0.4", url: {base: ".."}})</script>
+  </body>
+</html>

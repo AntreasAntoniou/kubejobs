@@ -313,7 +313,8 @@ class KubernetesJob:
             "apiVersion": "batch/v1",
             "kind": "Job",
             "metadata": {
-                "name": self.name,
+                # "name": self.name,
+                "generateName": self.name + "-",
                 "labels": self.labels,  # Add labels here
                 "annotations": self.annotations,  # Add metadata here
             },

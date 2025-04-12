@@ -396,8 +396,10 @@ class KubernetesJob:
         with open("temp_job.yaml", "w") as temp_file:
             temp_file.write(job_yaml)
 
+        job_dict = yaml.safe_load(job_yaml)
+
         # Run the kubectl command -- if generateName is being used, use kubectl create instead of apply
-        if "generateName" in job_yaml.get("metadata", {}):
+        if "generateName" in job_dict.get("metadata", {}):
             cmd = ["kubectl", "create", "-f", "temp_job.yaml"]
         else:
             cmd = ["kubectl", "apply", "-f", "temp_job.yaml"]

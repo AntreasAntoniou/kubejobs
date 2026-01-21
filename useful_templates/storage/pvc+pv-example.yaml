@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-instafluencer-data
+spec:
+  storageClassName: "sc-instafluencer-data"
+  capacity:
+    storage: 1500Gi
+  accessModes:
+    - ReadOnlyMany
+  claimRef:
+    namespace: default
+    name: pvc-instafluencer-data
+  csi:
+    driver: pd.csi.storage.gke.io
+    volumeHandle: projects/tali-multi-modal/zones/us-central1-a/disks/instafluencer-ssd
+    fsType: ext4
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  namespace: default
+  name: pvc-instafluencer-data
+spec:
+  storageClassName: "sc-instafluencer-data"
+  volumeName: pv-instafluencer-data
+  accessModes:
+    - ReadOnlyMany
+  resources:
+    requests:
+      storage: 1500Gi

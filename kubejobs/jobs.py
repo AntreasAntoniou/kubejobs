@@ -1,0 +1,808 @@
+import grp
+import re
+import json
+import logging
+import os
+import pwd
+import subprocess
+from typing import List, Optional, Dict, Tuple, Any
+
+import fire
+import yaml
+from kubernetes import client, config
+from rich.logging import RichHandler
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+handler = RichHandler(markup=True)
+handler.setFormatter(logging.Formatter("%(message)s"))
+logger.addHandler(handler)
+
+MAX_CPU = 192
+MAX_RAM = 890
+MAX_GPU = 8
+
+# A summary of the GPU setup is:
+
+# * 32 full Nvidia A100 80 GB GPUs
+# * 88 full Nvidia A100 40 GB GPUs
+# * 14 MIG Nvidia A100 40 GB GPUs equating to 28 Nvidia A100 3G.20GB GPUs
+# * 20 MIG Nvidia A100 40 GB GPU equating to 140 A100 1G.5GB GPUs
+
+
+def fetch_user_info():
+    user_info = {}
+
+    # Get the current user name
+    user_info["login_user"] = os.getlogin()
+
+    # Get user entry from /etc/passwd
+    pw_entry = pwd.getpwnam(os.getlogin())
+
+    # Extracting home directory and shell from the password entry
+    user_info["home"] = pw_entry.pw_dir
+    user_info["shell"] = pw_entry.pw_shell
+
+    # Get group IDs
+    group_ids = os.getgrouplist(os.getlogin(), pw_entry.pw_gid)
+
+    # Get group names from group IDs
+    user_info["groups"] = " ".join(
+        [grp.getgrgid(gid).gr_name for gid in group_ids]
+    )
+
+    return user_info
+
+
+def _parse_accelerator_spec(spec: str) -> Tuple[Dict[str, str], int]:
+    """Parse accelerator shorthand like 'h100x1' or 'a100-80x2'.
+
+    Returns (node_selector_labels, gpu_count).
+    Labels follow the convention: {'accel.family': 'h100', 'accel.mem_gb': '80'}
+    """
+    pattern = re.compile(r"^(h100|a100|l4)(?:-(\d+))?x(\d+)$", re.IGNORECASE)
+    m = pattern.match(spec.replace(" ", ""))
+    if not m:
+        raise ValueError(
+            f"Invalid accelerator spec '{spec}'. Expected like 'h100x1' or 'a100-80x2'"
+        )
+    family = m.group(1).lower()
+    mem = m.group(2)
+    count = int(m.group(3))
+    labels: Dict[str, str] = {"accel.family": family}
+    if mem is not None:
+        labels["accel.mem_gb"] = mem
+    return labels, count
+
+
+class GPU_PRODUCT:
+    NVIDIA_A100_SXM4_80GB = "NVIDIA-A100-SXM4-80GB"
+    NVIDIA_A100_SXM4_40GB = "NVIDIA-A100-SXM4-40GB"
+    NVIDIA_A100_SXM4_40GB_MIG_3G_20GB = "NVIDIA-A100-SXM4-40GB-MIG-3g.20gb"
+    NVIDIA_A100_SXM4_40GB_MIG_1G_5GB = "NVIDIA-A100-SXM4-40GB-MIG-1g.5gb"
+    NVIDIA_H100_80GB = "NVIDIA-H100-80GB-HBM3"
+
+
+class KueueQueue:
+    INFORMATICS = "informatics-user-queue"
+
+
+class KubernetesJob:
+    """
+    A class for generating Kubernetes Job YAML configurations.
+
+    Attributes:
+        name (str): Name of the job and associated resources.
+        image (str): Container image to use for the job.
+        command (List[str], optional): Command to execute in the container. Defaults to None.
+        args (List[str], optional): Arguments for the command. Defaults to None.
+        cpu_request (str, optional): Amount of CPU to request. For example, "500m" for half a CPU. Defaults to None. Max is 192 CPUs
+        ram_request (str, optional): Amount of RAM to request. For example, "1Gi" for 1 gibibyte. Defaults to None. Max is 890 GB
+        storage_request (str, optional): Amount of storage to request. For example, "10Gi" for 10 gibibytes. Defaults to None.
+        gpu_type (str, optional): Type of GPU resource, e.g. "nvidia.com/gpu". Defaults to None.
+        gpu_product (str, optional): GPU product, e.g. "NVIDIA-A100-SXM4-80GB". Defaults to None.
+                                                    Possible choices: NVIDIA-A100-SXM4-80GB – a full non-MIG 80GB GPU, total available 32
+                                                                      NVIDIA-A100-SXM4-40GB – a full non-MIG 40GB GPU, total available 88
+                                                                      NVIDIA-A100-SXM4-40GB-MIG-3g.20gb – just under half-GPU
+                                                                      NVIDIA-A100-SXM4-40GB-MIG-1g.5gb – a seventh of a GPU
+        gpu_limit (int, optional): Number of GPU resources to allocate. Defaults to None.
+        backoff_limit (int, optional): Maximum number of retries before marking job as failed. Defaults to 4.
+        restart_policy (str, optional): Restart policy for the job, default is "Never".
+        shm_size (str, optional): Size of shared memory, e.g. "2Gi". If not set, defaults to None.
+        secret_env_vars (dict, optional): Dictionary of secret environment variables. Defaults to None.
+        env_vars (dict, optional): Dictionary of normal (non-secret) environment variables. Defaults to None.
+        volume_mounts (dict, optional): Dictionary of volume mounts. Defaults to None.
+        namespace (str, optional): Namespace of the job. Defaults to None.
+
+    Methods:
+        generate_yaml() -> dict: Generate the Kubernetes Job YAML configuration.
+    """
+
+    def __init__(
+        self,
+        name: str,
+        image: str,
+        kueue_queue_name: str,
+        command: List[str] = None,
+        args: Optional[List[str]] = None,
+        cpu_request: Optional[str] = None,
+        ram_request: Optional[str] = None,
+        storage_request: Optional[str] = None,
+        gpu_type: Optional[str] = None,
+        gpu_product: Optional[str] = None,
+        gpu_limit: Optional[int] = None,
+        backoff_limit: int = 0,
+        restart_policy: str = "Never",
+        shm_size: Optional[str] = None,
+        secret_env_vars: Optional[dict] = None,
+        env_vars: Optional[dict] = None,
+        volume_mounts: Optional[dict] = None,
+        job_deadlineseconds: Optional[int] = None,
+        privileged_security_context: bool = False,
+        user_name: Optional[str] = None,
+        user_email: Optional[str] = None,
+        labels: Optional[dict] = None,
+        annotations: Optional[dict] = None,
+        namespace: Optional[str] = None,
+        image_pull_secret: Optional[str] = None,
+        node_selector: Optional[Dict[str, str]] = None,
+        tolerations: Optional[List[dict]] = None,
+        affinity: Optional[dict] = None,
+        accelerator: Optional[str] = None,  # e.g., 'h100x1' or 'a100-80x2'
+        service_account_name: Optional[str] = None,
+    ):
+        self.name = name
+
+        self.image = image
+        self.command = command
+        self.args = args
+        # Accelerator shorthand may define labels and gpu count before we derive cpu/ram defaults
+        if accelerator:
+            accel_labels, accel_count = _parse_accelerator_spec(accelerator)
+            node_selector = {**(node_selector or {}), **accel_labels}
+            if gpu_limit is None:
+                gpu_limit = accel_count
+            if gpu_type is None:
+                gpu_type = "nvidia.com/gpu"
+
+        self.cpu_request = cpu_request if cpu_request else 12 * gpu_limit
+        self.ram_request = ram_request if ram_request else f"{80 * gpu_limit}G"
+        self.storage_request = storage_request
+        self.gpu_type = gpu_type
+        self.gpu_product = gpu_product
+        assert (
+            gpu_limit is not None
+        ), f"gpu_limit must be set to a value between 1 and {MAX_GPU}, not {gpu_limit}"
+        assert (
+            gpu_limit > 0
+        ), f"gpu_limit must be set to a value between 1 and {MAX_GPU}, not {gpu_limit}"
+        self.gpu_limit = gpu_limit
+        self.backoff_limit = backoff_limit
+        self.restart_policy = restart_policy
+        self.shm_size = (
+            shm_size
+            if shm_size is not None
+            else (
+                ram_request
+                if ram_request is not None
+                else f"{MAX_RAM // (MAX_GPU - gpu_limit + 1)}G"
+            )
+        )
+        self.secret_env_vars = secret_env_vars
+        self.image_pull_secret = image_pull_secret
+        self.env_vars = env_vars
+        self.volume_mounts = volume_mounts
+        self.job_deadlineseconds = job_deadlineseconds
+        self.privileged_security_context = privileged_security_context
+
+        self.user_name = user_name or os.environ.get("USER", "unknown")
+        self.user_email = user_email  # This is now a required field.
+        self.kueue_queue_name = kueue_queue_name
+
+        self.labels = {
+            "eidf/user": self.user_name,
+            "kueue.x-k8s.io/queue-name": self.kueue_queue_name,
+        }
+
+        if labels is not None:
+            self.labels.update(labels)
+
+        self.annotations = {"eidf/user": self.user_name}
+        if user_email is not None:
+            self.annotations["eidf/email"] = user_email
+
+        if annotations is not None:
+            self.annotations.update(annotations)
+
+        self.user_info = fetch_user_info()
+        self.annotations.update(self.user_info)
+        logger.info(f"labels {self.labels}")
+        logger.info(f"annotations {self.annotations}")
+
+        self.namespace = namespace
+        self.node_selector = node_selector or {}
+        self.tolerations = tolerations
+        self.affinity = affinity
+        self.service_account_name = service_account_name
+
+    def _add_shm_size(self, container: dict):
+        """Adds shared memory volume if shm_size is set."""
+        if self.shm_size:
+            container["volumeMounts"].append(
+                {"name": "dshm", "mountPath": "/dev/shm"}
+            )
+        return container
+
+    def _add_env_vars(self, container: dict):
+        """Adds secret and normal environment variables to the
+        container."""
+        container["env"] = []
+        if self.secret_env_vars or self.env_vars:
+            if self.secret_env_vars:
+                for key, value in self.secret_env_vars.items():
+                    container["env"].append(
+                        {
+                            "name": key,
+                            "valueFrom": {
+                                "secretKeyRef": {
+                                    "name": value["secret_name"],
+                                    "key": value["key"],
+                                }
+                            },
+                        }
+                    )
+
+            if self.env_vars:
+                for key, value in self.env_vars.items():
+                    container["env"].append({"name": key, "value": value})
+
+        # Always export the POD_NAME environment variable
+        container["env"].append(
+            {
+                "name": "POD_NAME",
+                "valueFrom": {"fieldRef": {"fieldPath": "metadata.name"}},
+            }
+        )
+
+        return container
+
+    def _add_volume_mounts(self, container: dict):
+        """Adds volume mounts to the container."""
+        if self.volume_mounts:
+            for mount_name, mount_data in self.volume_mounts.items():
+                container["volumeMounts"].append(
+                    {
+                        "name": mount_name,
+                        "mountPath": mount_data["mountPath"],
+                    }
+                )
+
+        return container
+
+    def _add_privileged_security_context(self, container: dict):
+        """Adds privileged security context to the container."""
+        if self.privileged_security_context:
+            container["securityContext"] = {
+                "privileged": True,
+            }
+
+        return container
+
+    def generate_yaml(self):
+        container = {
+            "name": self.name,
+            "image": self.image,
+            "imagePullPolicy": "Always",
+            "volumeMounts": [],
+            "resources": {
+                "requests": {},
+                "limits": {},
+            },
+        }
+
+        if self.command is not None:
+            container["command"] = self.command
+
+        if self.args is not None:
+            container["args"] = self.args
+
+        if not (
+            self.gpu_type is None
+            or self.gpu_limit is None
+            or self.gpu_product is None
+        ):
+            container["resources"] = {
+                "limits": {f"{self.gpu_type}": self.gpu_limit}
+            }
+
+        container = self._add_shm_size(container)
+        container = self._add_env_vars(container)
+        container = self._add_volume_mounts(container)
+        container = self._add_privileged_security_context(container)
+
+        if (
+            self.cpu_request is not None
+            or self.ram_request is not None
+            or self.storage_request is not None
+        ):
+            if "resources" not in container:
+                container["resources"] = {"requests": {}}
+
+            if "requests" not in container["resources"]:
+                container["resources"]["requests"] = {}
+
+        if self.cpu_request is not None:
+            container["resources"]["requests"]["cpu"] = self.cpu_request
+            container["resources"]["limits"]["cpu"] = self.cpu_request
+
+        if self.ram_request is not None:
+            container["resources"]["requests"]["memory"] = self.ram_request
+            container["resources"]["limits"]["memory"] = self.ram_request
+
+        if self.storage_request is not None:
+            container["resources"]["requests"][
+                "storage"
+            ] = self.storage_request
+
+        if self.gpu_type is not None and self.gpu_limit is not None:
+            container["resources"]["limits"][
+                f"{self.gpu_type}"
+            ] = self.gpu_limit
+
+        job = {
+            "apiVersion": "batch/v1",
+            "kind": "Job",
+            "metadata": {
+                # "name": self.name,
+                "generateName": self.name + "-",
+                "labels": self.labels,  # Add labels here
+                "annotations": self.annotations,  # Add metadata here
+            },
+            "spec": {
+                "template": {
+                    "metadata": {
+                        "labels": self.labels,  # Add labels to Pod template as well
+                        "annotations": self.annotations,  # Add metadata to Pod template as well
+                    },
+                    "spec": {
+                        "containers": [container],
+                        "restartPolicy": self.restart_policy,
+                        "volumes": [],
+                    },
+                },
+                "backoffLimit": self.backoff_limit,
+            },
+        }
+
+        if self.job_deadlineseconds:
+            job["spec"]["activeDeadlineSeconds"] = self.job_deadlineseconds
+
+        if self.namespace:
+            job["metadata"]["namespace"] = self.namespace
+
+        # Node selection: prefer accel.* labels when present; otherwise fallback to gpu product selector
+        combined_node_selector: Dict[str, str] = {}
+        # Prefer accel.* labels provided by pools/nodes
+        for k in ("accel.family", "accel.mem_gb", "accel.count"):
+            if self.node_selector and k in self.node_selector:
+                combined_node_selector[k] = self.node_selector[k]
+        # Fallback to GPU product if provided
+        if (
+            not (
+                self.gpu_type is None
+                or self.gpu_limit is None
+                or self.gpu_product is None
+            )
+            and not combined_node_selector
+        ):
+            combined_node_selector[f"{self.gpu_type}.product"] = (
+                self.gpu_product
+            )
+        # Merge any remaining user selectors
+        if self.node_selector:
+            for k, v in self.node_selector.items():
+                combined_node_selector.setdefault(k, v)
+        if combined_node_selector:
+            job["spec"]["template"]["spec"][
+                "nodeSelector"
+            ] = combined_node_selector
+
+        # Optional tolerations/affinity for advanced scheduling
+        if self.tolerations:
+            job["spec"]["template"]["spec"]["tolerations"] = self.tolerations
+        if self.affinity:
+            job["spec"]["template"]["spec"]["affinity"] = self.affinity
+        # Add shared memory volume if shm_size is set
+        if self.shm_size:
+            job["spec"]["template"]["spec"]["volumes"].append(
+                {
+                    "name": "dshm",
+                    "emptyDir": {
+                        "medium": "Memory",
+                        "sizeLimit": self.shm_size,
+                    },
+                }
+            )
+
+        if self.service_account_name:
+            job["spec"]["template"]["spec"][
+                "serviceAccountName"
+            ] = self.service_account_name
+
+        # Add volumes for the volume mounts
+        if self.volume_mounts:
+            for mount_name, mount_data in self.volume_mounts.items():
+                volume = {"name": mount_name}
+
+                if "pvc" in mount_data:
+                    volume["persistentVolumeClaim"] = {
+                        "claimName": mount_data["pvc"]
+                    }
+                elif "emptyDir" in mount_data:
+                    volume["emptyDir"] = {}
+                elif "csi" in mount_data:
+                    volume["csi"] = mount_data["csi"]
+                # Add more volume types here if needed
+                if "server" in mount_data:
+                    volume["nfs"] = {
+                        "server": mount_data["server"],
+                        "path": mount_data["path"],
+                    }
+
+                job["spec"]["template"]["spec"]["volumes"].append(volume)
+
+        if self.image_pull_secret:
+            job["spec"]["template"]["spec"]["imagePullSecrets"] = [
+                {"name": self.image_pull_secret}
+            ]
+
+        return yaml.dump(job)
+
+    def run(self):
+        config.load_kube_config()
+
+        job_yaml = self.generate_yaml()
+
+        # Save the generated YAML to a temporary file
+        with open("temp_job.yaml", "w") as temp_file:
+            temp_file.write(job_yaml)
+
+        job_dict = yaml.safe_load(job_yaml)
+
+        # Run the kubectl command -- if generateName is being used, use kubectl create instead of apply
+        if "generateName" in job_dict.get("metadata", {}):
+            cmd = ["kubectl", "create", "-f", "temp_job.yaml"]
+        else:
+            cmd = ["kubectl", "apply", "-f", "temp_job.yaml"]
+
+        try:
+            result = subprocess.run(
+                cmd,
+                check=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+            )
+            # Remove the temporary file
+            os.remove("temp_job.yaml")
+            return result.returncode
+        except subprocess.CalledProcessError as e:
+            logger.info(
+                f"Command '{' '.join(cmd)}' failed with return code {e.returncode}."
+            )
+            logger.info(f"Stdout:\n{e.stdout}")
+            logger.info(f"Stderr:\n{e.stderr}")
+            # Remove the temporary file
+            os.remove("temp_job.yaml")
+            return e.returncode  # return the exit code
+        except Exception as e:
+            logger.exception(
+                f"An unexpected error occurred while running '{' '.join(cmd)}'."
+            )  # This logs the traceback too
+            # Remove the temporary file
+            os.remove("temp_job.yaml")
+            return 1  # return the exit code
+
+    @classmethod
+    def from_command_line(cls):
+        """Create a KubernetesJob instance from command-line arguments
+        and run the job.
+        Example: python kubejobs/jobs.py --image=nvcr.io/nvidia/cuda:11.8.0-cudnn8-devel-ubuntu20.04 --gpu_type=nvidia.com/gpu --gpu_limit=1 --backoff_limit=4 --gpu_product=NVIDIA-A100-SXM4-40GB
+        """
+        fire.Fire(cls)
+
+
+def create_jobs_for_experiments(commands: List[str], *args, **kwargs):
+    """
+    Creates and runs a Kubernetes Job for each command in the given list of commands.
+
+    :param commands: A list of strings, where each string represents a command to be executed.
+    :param args: Positional arguments to be passed to the KubernetesJob constructor.
+    :param kwargs: Keyword arguments to be passed to the KubernetesJob constructor.
+
+    :Example:
+
+    .. code-block:: python
+
+        from kubejobs import KubernetesJob
+
+        commands = [
+            "python experiment.py --param1 value1",
+            "python experiment.py --param1 value2",
+            "python experiment.py --param1 value3"
+        ]
+
+        create_jobs_for_experiments(
+            commands,
+            image="nvcr.io/nvidia/cuda:12.0.0-cudnn8-devel-ubuntu22.04",
+            gpu_type="nvidia.com/gpu",
+            gpu_limit=1,
+            backoff_limit=4
+        )
+    """
+    jobs = []
+    for idx, command in enumerate(commands):
+        job_name = f"{kwargs.get('name', 'experiment')}-{idx}"
+        kubernetes_job = KubernetesJob(
+            name=job_name,
+            command=["/bin/bash"],
+            args=["-c", command],
+            *args,
+            **kwargs,
+        )
+        kubernetes_job.run()
+        jobs.append(kubernetes_job)
+
+    return jobs
+
+
+def create_pvc(
+    pvc_name: str,
+    storage: str,
+    access_modes: list = None,
+):
+    if access_modes is None:
+        access_modes = ["ReadWriteOnce"]
+
+    if isinstance(access_modes, str):
+        access_modes = [access_modes]
+
+    pvc = {
+        "apiVersion": "v1",
+        "kind": "PersistentVolumeClaim",
+        "metadata": {"name": pvc_name},
+        "spec": {
+            "accessModes": access_modes,
+            "resources": {"requests": {"storage": storage}},
+        },
+    }
+
+    # Convert the PVC dictionary to a JSON string
+    pvc_json = json.dumps(pvc)
+
+    # Write the JSON to a temporary file
+    with open("pvc.json", "w") as f:
+        f.write(pvc_json)
+
+    # Use kubectl to create the PVC from the JSON file
+    subprocess.run(["kubectl", "apply", "-f", "pvc.json"], check=True)
+
+    # Clean up the temporary file
+    subprocess.run(["rm", "pvc.json"], check=True)
+
+    return pvc_name
+
+
+def create_pv(
+    pv_name: str,
+    storage: str,
+    storage_class_name: str,
+    access_modes: list,
+    pv_type: str,
+    namespace: str = "default",
+    claim_name: str = None,
+    local_path: str = None,
+    fs_type: str = "ext4",
+):
+    """
+    Create a PersistentVolume in the specified namespace with the specified type.
+
+    :param pv_name: The name of the PersistentVolume.
+    :param storage: The amount of storage for the PersistentVolume (e.g., "1500Gi").
+    :param storage_class_name: The storage class name for the PersistentVolume.
+    :param access_modes: A list of access modes for the PersistentVolume.
+    :param pv_type: The type of PersistentVolume, either 'local' or 'gcePersistentDisk'.
+    :param namespace: The namespace in which to create the PersistentVolume. Defaults to "default".
+    :param claim_name: The name of the PersistentVolumeClaim to bind to the PersistentVolume.
+    :param local_path: The path on the host for a local PersistentVolume. Required if pv_type is 'local'.
+    :param fs_type: The filesystem type for the PersistentVolume. Defaults to "ext4".
+
+    Example usage:
+
+    .. code-block:: python
+
+        create_pv("pv-instafluencer-data", "1500Gi", "sc-instafluencer-data", ["ReadOnlyMany"], "local",
+                  claim_name="pvc-instafluencer-data", local_path="/mnt/data")
+        # This will create a local PersistentVolume named "pv-instafluencer-data" with 1500Gi of storage,
+        # "sc-instafluencer-data" storage class, ReadOnlyMany access mode, and a local path "/mnt/data".
+    """
+
+    if pv_type not in ["local", "node"]:
+        raise ValueError(
+            "pv_type must be either 'local' or 'gcePersistentDisk'"
+        )
+
+    if pv_type == "local" and not local_path:
+        raise ValueError("local_path must be provided when pv_type is 'local'")
+
+    pv = {
+        "apiVersion": "v1",
+        "kind": "PersistentVolume",
+        "metadata": {"name": pv_name},
+        "spec": {
+            "storageClassName": storage_class_name,
+            "capacity": {"storage": storage},
+            "accessModes": access_modes,
+            "csi": {"driver": "pd.csi.storage.gke.io", "fsType": fs_type},
+        },
+    }
+
+    if claim_name:
+        pv["spec"]["claimRef"] = {"namespace": namespace, "name": claim_name}
+
+    if pv_type == "local":
+        pv["spec"]["hostPath"] = {"path": local_path}
+
+    logger.info(pv)
+    config.load_kube_config()
+    core_api = client.CoreV1Api()
+    core_api.create_persistent_volume(body=pv)
+
+
+def get_preemptible_gpu_quotas(
+    project_id: str, region: str
+) -> Dict[str, Dict[str, Optional[float]]]:
+    """Return preemptible GPU quotas for a project/region.
+
+    Combines service-level (authoritative) quota limits with region-level
+    usage where available. Focuses on metrics matching
+    ``compute.googleapis.com/preemptible_nvidia_*_gpus``.
+
+    Args:
+        project_id: GCP project ID.
+        region: GCP region (e.g., "us-west1").
+
+    Returns:
+        A mapping keyed by service metric name, each value containing:
+        {"region_metric": str, "limit": float|int, "usage": float|None}.
+        ``usage`` may be None when not reported by region-level API.
+    """
+    # 1) Fetch service-level quota infos (limits by dimension)
+    try:
+        svc_proc = subprocess.run(
+            [
+                "gcloud",
+                "beta",
+                "quotas",
+                "info",
+                "list",
+                "--service=compute.googleapis.com",
+                f"--project={project_id}",
+                "--format=json",
+            ],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        service_infos = json.loads(svc_proc.stdout)
+    except subprocess.CalledProcessError as e:
+        logger.info(
+            f"Failed to fetch service-level quotas: returncode={e.returncode} stderr={e.stderr}"
+        )
+        service_infos = []
+    except json.JSONDecodeError:
+        service_infos = []
+
+    results: Dict[str, Dict[str, Optional[float]]] = {}
+
+    # Helper to translate service metric to region-level metric name
+    def to_region_metric_name(service_metric: str) -> str:
+        tail = service_metric.split("/")[
+            -1
+        ]  # e.g., preemptible_nvidia_h100_gpus
+        return "PREEMPTIBLE_" + tail.upper().replace("-", "_")
+
+    # Extract preemptible GPU limits per region from service-level data
+    for info in service_infos:
+        metric = info.get("metric", "")
+        if not (
+            metric.startswith("compute.googleapis.com/preemptible_nvidia_")
+            and metric.endswith("_gpus")
+        ):
+            continue
+
+        dims: List[str] = info.get("dimensions", []) or []
+        if "region" not in dims:
+            continue
+
+        dim_infos: List[Dict[str, Any]] = info.get("dimensionsInfos", []) or []
+        for dim in dim_infos:
+            applicable: List[str] = dim.get("applicableLocations", []) or []
+            details: Dict[str, Any] = dim.get("details", {}) or {}
+            # Only capture the entry relevant to the requested region
+            if region in applicable:
+                raw_value = details.get("value")
+                try:
+                    limit_value = (
+                        float(raw_value) if raw_value is not None else None
+                    )
+                except (TypeError, ValueError):
+                    limit_value = None
+
+                results[metric] = {
+                    "region_metric": to_region_metric_name(metric),
+                    "limit": limit_value,
+                    "usage": None,  # to be filled from region-level call when possible
+                }
+                break
+
+    # 2) Region-level quotas (often contains usage; naming differs)
+    try:
+        reg_proc = subprocess.run(
+            [
+                "gcloud",
+                "compute",
+                "regions",
+                "describe",
+                region,
+                f"--project={project_id}",
+                "--format=json",
+            ],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        region_info = json.loads(reg_proc.stdout)
+    except subprocess.CalledProcessError as e:
+        logger.info(
+            f"Failed to fetch region-level quotas: returncode={e.returncode} stderr={e.stderr}"
+        )
+        region_info = {}
+    except json.JSONDecodeError:
+        region_info = {}
+
+    quotas: List[Dict[str, Any]] = region_info.get("quotas", []) or []
+
+    # Build a reverse index from region_metric -> service_metric
+    region_to_service: Dict[str, str] = {
+        v.get("region_metric", ""): k
+        for k, v in results.items()
+        if v.get("region_metric")
+    }
+
+    for q in quotas:
+        metric_name = q.get("metric")
+        if not metric_name:
+            continue
+        if metric_name in region_to_service:
+            svc_key = region_to_service[metric_name]
+            # Attach usage; if region API also has a limit, trust that too
+            try:
+                if "usage" in q:
+                    results[svc_key]["usage"] = float(q.get("usage", 0.0))
+            except (TypeError, ValueError):
+                pass
+            try:
+                if "limit" in q and results[svc_key].get("limit") in (
+                    None,
+                    -1,
+                ):
+                    results[svc_key]["limit"] = float(q.get("limit"))
+            except (TypeError, ValueError):
+                pass
+
+    return results
+
+
+if __name__ == "__main__":
+    KubernetesJob.from_command_line()

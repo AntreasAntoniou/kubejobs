@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: mynamespace
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: pv-creator-role
+  namespace: mynamespace
+rules:
+- apiGroups: [""]
+  resources: ["persistentvolumes"]
+  verbs: ["create", "get", "list", "watch", "update", "patch", "delete"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: pv-creator-rolebinding
+  namespace: mynamespace
+subjects:
+- kind: User
+  name: u-ngfkd
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role
+  name: pv-creator-role
+  apiGroup: rbac.authorization.k8s.io

@@ -1,0 +1,38 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: node-info-5gb
+spec:
+  template:
+    spec:
+      nodeSelector:
+        nvidia.com/gpu.product: NVIDIA-A100-SXM4-40GB-MIG-1g.5gb
+      containers:
+      - name: node-info-5gb
+        image: nvcr.io/nvidia/cuda:12.0.0-cudnn8-devel-ubuntu22.04
+        command: ["/bin/bash"]
+        args:
+        - "-c"
+        - |
+          echo "Node Information:" > /node-info/node-info.txt
+          echo "Hostname: $(hostname)" >> /node-info/node-info.txt
+          echo "RAM:" >> /node-info/node-info.txt
+          awk '/MemTotal/ {printf "%.0f GB\n", $2/1024/1024}' /proc/meminfo >> /node-info/node-info.txt
+          echo "CPU:" >> /node-info/node-info.txt
+          lscpu >> /node-info/node-info.txt
+          echo "GPU:" >> /node-info/node-info.txt
+          nvidia-smi --query-gpu=gpu_name,memory.total --format=csv,noheader >> /node-info/node-info.txt
+          echo "Disk space:" >> /node-info/node-info.txt
+          df -h --output=source,size | grep -E "/dev/.*" >> /node-info/node-info.txt
+          cat /node-info/node-info.txt
+        resources:
+          limits:
+            nvidia.com/gpu: 1
+        volumeMounts:
+        - name: node-info-5gb
+          mountPath: /node-info
+      restartPolicy: Never
+      volumes:
+      - name: node-info-5gb
+        emptyDir: {}
+  backoffLimit: 4

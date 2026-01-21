@@ -1,0 +1,27 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: node-info-80gb-full-8
+spec:
+  template:
+    spec:
+      nodeSelector:
+        nvidia.com/gpu.product: NVIDIA-A100-SXM4-80GB # a full non-MIG 80GB GPU
+      containers:
+      - name: node-info-80gb-full-8
+        image: nvcr.io/nvidia/cuda:12.0.0-cudnn8-devel-ubuntu22.04
+        command: ["/bin/bash"]
+        args:
+        - "-c"
+        - ls
+        resources:
+          limits:
+            nvidia.com/gpu: 8
+        volumeMounts:
+        - name: node-info-80gb-full-8
+          mountPath: /node-info
+      restartPolicy: Never
+      volumes:
+      - name: node-info-80gb-full-8
+        emptyDir: {}
+  backoffLimit: 4
